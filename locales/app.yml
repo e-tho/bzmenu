@@ -1,0 +1,144 @@
+_version: 2
+
+menus:
+  main:
+    options:
+      scan:
+        name:
+          en: "Scan for Devices"
+          fr: "Rechercher des appareils"
+      settings:
+        name:
+          en: "Settings"
+          fr: "Paramètres"
+      device:
+        name:
+          en: "Device"
+          fr: "Appareil"
+  device:
+    options:
+      connect:
+        name:
+          en: "Connect"
+          fr: "Connecter"
+      disconnect:
+        name:
+          en: "Disconnect"
+          fr: "Déconnecter"
+      toggle_trust:
+        name:
+          en: "Toggle Trust"
+          fr: "Changer la confiance"
+      forget:
+        name:
+          en: "Forget Device"
+          fr: "Oublier l'appareil"
+  settings:
+    options:
+      enable_discoverable:
+        name:
+          en: "Make Device Visible"
+          fr: "Rendre l'appareil visible"
+      disable_discoverable:
+        name:
+          en: "Make Device Hidden"
+          fr: "Rendre l'appareil invisible"
+      enable_pairable:
+        name:
+          en: "Allow Pairing"
+          fr: "Autoriser l'appairage"
+      disable_pairable:
+        name:
+          en: "Disallow Pairing"
+          fr: "Interdire l'appairage"
+      disable_adapter:
+        name:
+          en: "Disable Bluetooth"
+          fr: "Désactiver Bluetooth"
+  adapter:
+    options:
+      power_on_device:
+        name:
+          en: "Enable Bluetooth"
+          fr: "Activer Bluetooth"
+  bluetooth:
+    options:
+      enable_discoverable:
+        name:
+          en: "Make Discoverable"
+          fr: "Rendre visible"
+      disable_discoverable:
+        name:
+          en: "Make Hidden"
+          fr: "Rendre invisible"
+      enable_pairable:
+        name:
+          en: "Enable Pairing"
+          fr: "Activer l'appairage"
+      disable_pairable:
+        name:
+          en: "Disable Pairing"
+          fr: "Désactiver l'appairage"
+    confirm_passkey:
+      en: "Confirm passkey %{passkey} for device %{device_name}?"
+      fr: "Confirmer le code %{passkey} pour l'appareil %{device_name}?"
+    confirm:
+      en: "Confirm"
+      fr: "Confirmer"
+    cancel:
+      en: "Cancel"
+      fr: "Annuler"
+
+notifications:
+  bt:
+    scan_already_in_progress:
+      en: "Bluetooth scan already in progress"
+      fr: "Recherche Bluetooth déjà en cours"
+    scan_in_progress:
+      en: "Searching for Bluetooth devices"
+      fr: "Recherche d'appareils Bluetooth en cours"
+    scan_completed:
+      en: "Bluetooth scan completed"
+      fr: "Recherche Bluetooth terminée"
+    device_connected:
+      en: "Connected to %{device_name}"
+      fr: "Connecté à %{device_name}"
+    device_disconnected:
+      en: "Disconnected from %{device_name}"
+      fr: "Déconnecté de %{device_name}"
+    device_paired:
+      en: "Device paired: %{device_name}"
+      fr: "Appareil appairé: %{device_name}"
+    device_trusted:
+      en: "Device trusted: %{device_name}"
+      fr: "Appareil approuvé: %{device_name}"
+    device_untrusted:
+      en: "Device untrusted: %{device_name}"
+      fr: "Appareil non approuvé: %{device_name}"
+    device_forgotten:
+      en: "Device removed: %{device_name}"
+      fr: "Appareil supprimé: %{device_name}"
+    adapter_powered_off:
+      en: "Bluetooth is disabled"
+      fr: "Bluetooth est désactivé"
+    adapter_enabled:
+      en: "Bluetooth enabled"
+      fr: "Bluetooth activé"
+    adapter_disabled:
+      en: "Bluetooth disabled"
+      fr: "Bluetooth désactivé"
+    discoverable_enabled:
+      en: "Your device is now discoverable"
+      fr: "Votre appareil est maintenant visible"
+    discoverable_disabled:
+      en: "Your device is now hidden"
+      fr: "Votre appareil est maintenant invisible"
+    pairable_enabled:
+      en: "Pairing enabled"
+      fr: "Appairage activé"
+    pairable_disabled:
+      en: "Pairing disabled"
+      fr: "Appairage désactivé"
+    main_menu_exited:
+      en: "Exited menu"
+      fr: "Menu fermé"
