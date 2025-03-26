@@ -142,3 +142,12 @@ notifications:
     main_menu_exited:
       en: "Exited menu"
       fr: "Menu fermé"
+    pairing_failed:
+      en: "Failed to pair with %{device_name}: %{error}"
+      fr: "Échec de l'appairage avec %{device_name} : %{error}"
+    device_out_of_range:
+      en: "Device '%{device_name}' is not available or out of range"
+      fr: "L'appareil '%{device_name}' n'est pas disponible ou hors de portée"
+    connection_failed:
+      en: "Connection to '%{device_name}' failed: %{error}"
+      fr: "Échec de la connexion à '%{device_name}' : %{error}"

@@ -405,27 +405,76 @@ impl App {
             format!("Connecting to device: {}", device.alias)
         );
 
-        if !device.is_paired {
-            self.pairing_manager.pair_device(device).await?;
+        let result = if !device.is_paired {
+            self.pairing_manager.pair_device(device).await
+        } else {
+            Ok(())
+        };
+
+        if let Err(err) = result {
+            let msg = t!(
+                "notifications.bt.pairing_failed",
+                device_name = device.alias,
+                error = err.to_string()
+            );
+
+            try_send_log!(self.log_sender, msg.to_string());
+            try_send_notification!(
+                self.notification_manager,
+                None,
+                Some(msg.to_string()),
+                Some("bluetooth"),
+                None
+            );
+            return Ok(());
         }
 
-        self.pairing_manager.connect_device(device).await?;
+        let connection_result = self.pairing_manager.connect_device(device).await;
 
-        let msg = t!(
-            "notifications.bt.device_connected",
-            device_name = device.alias
-        );
+        match connection_result {
+            Ok(_) => {
+                let msg = t!(
+                    "notifications.bt.device_connected",
+                    device_name = device.alias
+                );
 
-        try_send_log!(self.log_sender, msg.to_string());
-        try_send_notification!(
-            self.notification_manager,
-            None,
-            Some(msg.to_string()),
-            Some("bluetooth"),
-            None
-        );
+                try_send_log!(self.log_sender, msg.to_string());
+                try_send_notification!(
+                    self.notification_manager,
+                    None,
+                    Some(msg.to_string()),
+                    Some("bluetooth"),
+                    None
+                );
+                Ok(())
+            }
+            Err(err) => {
+                let msg = if err.to_string().contains("Page Timeout") {
+                    t!(
+                        "notifications.bt.device_out_of_range",
+                        device_name = device.alias
+                    )
+                } else {
+                    t!(
+                        "notifications.bt.connection_failed",
+                        device_name = device.alias,
+                        error = err.to_string()
+                    )
+                };
 
-        Ok(())
+                try_send_log!(self.log_sender, msg.to_string());
+
+                try_send_notification!(
+                    self.notification_manager,
+                    None,
+                    Some(msg.to_string()),
+                    Some("bluetooth"),
+                    None
+                );
+
+                Ok(())
+            }
+        }
     }
 
     async fn perform_device_disconnection(&self, device: &crate::bz::device::Device) -> Result<()> {
