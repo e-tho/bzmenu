@@ -1,5 +1,10 @@
 use crate::{
-    bz::{agent::AgentManager, controller::Controller, pairing::PairingManager, scanner::Scanner},
+    bz::{
+        agent::AgentManager,
+        controller::Controller,
+        pairing::{PairingConfirmationHandler, PairingManager},
+        scanner::Scanner,
+    },
     icons::Icons,
     menu::{AdapterMenuOptions, DeviceMenuOptions, MainMenuOptions, Menu, SettingsMenuOptions},
     notification::NotificationManager,
@@ -39,8 +44,17 @@ impl App {
         icons: Arc<Icons>,
     ) -> Result<Self> {
         let session = Arc::new(Session::new().await?);
+        let notification_manager = Arc::new(NotificationManager::new(icons.clone()));
 
-        let agent_manager = AgentManager::new(session.clone(), log_sender.clone()).await?;
+        let notification_manager_handler: Arc<dyn PairingConfirmationHandler> =
+            notification_manager.clone();
+
+        let agent_manager = AgentManager::new(
+            session.clone(),
+            log_sender.clone(),
+            notification_manager_handler,
+        )
+        .await?;
 
         let controller = Controller::new(session.clone(), log_sender.clone()).await?;
 
@@ -51,8 +65,6 @@ impl App {
         );
 
         let pairing_manager = PairingManager::new(controller.adapter.clone(), log_sender.clone());
-
-        let notification_manager = Arc::new(NotificationManager::new(icons));
 
         if !controller.is_powered {
             try_send_log!(

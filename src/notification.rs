@@ -1,13 +1,29 @@
 use anyhow::{anyhow, Result};
 use notify_rust::{Notification, NotificationHandle, Timeout};
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
+use tokio::task::spawn_blocking;
 
+use crate::bz::pairing::PairingConfirmationHandler;
 use crate::icons::Icons;
 
 pub struct NotificationManager {
     icons: Arc<Icons>,
     handles: Arc<Mutex<HashMap<u32, NotificationHandle>>>,
+}
+
+impl PairingConfirmationHandler for NotificationManager {
+    fn request_confirmation(
+        &self,
+        device_address: &str,
+        passkey: &str,
+        on_confirm: Box<dyn FnOnce() + Send>,
+        on_reject: Box<dyn FnOnce() + Send>,
+    ) -> Result<()> {
+        self.send_pairing_confirmation(device_address, passkey, on_confirm, on_reject)
+    }
 }
 
 impl NotificationManager {
@@ -61,6 +77,49 @@ impl NotificationManager {
             Ok(())
         } else {
             Err(anyhow!("Notification ID {} not found", id))
+        }
+    }
+
+    pub fn send_pairing_confirmation(
+        &self,
+        device_address: &str,
+        passkey: &str,
+        on_confirm: impl FnOnce() + Send + 'static,
+        on_reject: impl FnOnce() + Send + 'static,
+    ) -> Result<()> {
+        let icon_name = self.icons.get_xdg_icon("bluetooth");
+
+        let summary = t!("menus.bluetooth.pairing_request");
+        let body = t!(
+            "menus.bluetooth.confirm_passkey",
+            device_name = device_address,
+            passkey = passkey
+        );
+        let confirm_text = t!("menus.bluetooth.confirm");
+        let cancel_text = t!("menus.bluetooth.cancel");
+
+        let mut binding = Notification::new();
+        let notification = binding
+            .summary(&summary)
+            .body(&body)
+            .icon(&icon_name)
+            .timeout(Timeout::Milliseconds(30000))
+            .action("default", &confirm_text)
+            .action("confirm", &confirm_text)
+            .action("reject", &cancel_text);
+
+        match notification.show() {
+            Ok(handle) => {
+                spawn_blocking(move || {
+                    handle.wait_for_action(|action| match action {
+                        "default" | "confirm" => on_confirm(),
+                        "reject" | "__closed" => on_reject(),
+                        _ => on_reject(),
+                    });
+                });
+                Ok(())
+            }
+            Err(err) => Err(anyhow!("Failed to show notification: {}", err)),
         }
     }
 }

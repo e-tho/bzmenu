@@ -95,3 +95,13 @@ impl PairingManager {
         Ok(())
     }
 }
+
+pub trait PairingConfirmationHandler: Send + Sync {
+    fn request_confirmation(
+        &self,
+        device_address: &str,
+        passkey: &str,
+        on_confirm: Box<dyn FnOnce() + Send>,
+        on_reject: Box<dyn FnOnce() + Send>,
+    ) -> Result<()>;
+}
