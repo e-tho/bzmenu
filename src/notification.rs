@@ -29,7 +29,7 @@ impl NotificationManager {
         icon: Option<&str>,
         timeout: Option<Timeout>,
     ) -> Result<u32> {
-        let icon_name = self.icons.get_xdg_icon(icon.unwrap_or("network_wireless"));
+        let icon_name = self.icons.get_xdg_icon(icon.unwrap_or("bluetooth"));
 
         let mut notification = Notification::new();
         notification
