@@ -336,9 +336,19 @@ impl Menu {
     }
 
     pub fn format_device_display(&self, device: &Device, icon_type: &str, spaces: usize) -> String {
-        let mut display_name = format!("{} ({})", device.alias, device.addr);
+        let mut display_name = device.alias.to_string();
 
         let mut status_indicators = String::new();
+
+        if let Some(battery) = device.battery_percentage {
+            if icon_type == "font" {
+                if let Some(battery_icon) = self.icons.get_battery_icon(battery, icon_type) {
+                    status_indicators.push_str(&format!(" [{}]", battery_icon));
+                }
+            } else if icon_type == "xdg" {
+                status_indicators.push_str(&format!(" [{}%]", battery));
+            }
+        }
 
         if device.is_connected {
             status_indicators
