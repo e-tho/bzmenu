@@ -48,6 +48,17 @@ impl Icons {
         font_icons.insert("tv", '\u{f0379}');
         font_icons.insert("display", '\u{f0379}');
 
+        font_icons.insert("battery_100", '\u{f0079}');
+        font_icons.insert("battery_90", '\u{f0082}');
+        font_icons.insert("battery_80", '\u{f0081}');
+        font_icons.insert("battery_70", '\u{f0080}');
+        font_icons.insert("battery_60", '\u{f007f}');
+        font_icons.insert("battery_50", '\u{f007e}');
+        font_icons.insert("battery_40", '\u{f007d}');
+        font_icons.insert("battery_30", '\u{f007c}');
+        font_icons.insert("battery_20", '\u{f007b}');
+        font_icons.insert("battery_10", '\u{f007a}');
+
         font_icons.insert("ok", '\u{f05e1}');
         font_icons.insert("error", '\u{f05d6}');
         font_icons.insert("paired", '\u{f119f}');
@@ -85,6 +96,17 @@ impl Icons {
         xdg_icons.insert("watch", "smartwatch-symbolic");
         xdg_icons.insert("tv", "video-display-symbolic");
         xdg_icons.insert("display", "video-display-symbolic");
+
+        xdg_icons.insert("battery_100", "battery-full-symbolic");
+        xdg_icons.insert("battery_90", "battery-good-symbolic");
+        xdg_icons.insert("battery_80", "battery-good-symbolic");
+        xdg_icons.insert("battery_70", "battery-good-symbolic");
+        xdg_icons.insert("battery_60", "battery-good-symbolic");
+        xdg_icons.insert("battery_50", "battery-medium-symbolic");
+        xdg_icons.insert("battery_40", "battery-medium-symbolic");
+        xdg_icons.insert("battery_30", "battery-low-symbolic");
+        xdg_icons.insert("battery_20", "battery-low-symbolic");
+        xdg_icons.insert("battery_10", "battery-caution-symbolic");
 
         xdg_icons.insert("ok", "emblem-default-symbolic");
         xdg_icons.insert("error", "dialog-error-symbolic");
@@ -184,6 +206,24 @@ impl Icons {
         };
 
         self.get_icon(icon_key, icon_type)
+    }
+
+    pub fn get_battery_icon(&self, percentage: u8, icon_type: &str) -> Option<String> {
+        let icon_key = match percentage {
+            91..=100 => "battery_100",
+            81..=90 => "battery_90",
+            71..=80 => "battery_80",
+            61..=70 => "battery_70",
+            51..=60 => "battery_60",
+            41..=50 => "battery_50",
+            31..=40 => "battery_40",
+            21..=30 => "battery_30",
+            11..=20 => "battery_20",
+            0..=10 => "battery_10",
+            _ => return None,
+        };
+
+        Some(self.get_icon(icon_key, icon_type))
     }
 }
 
