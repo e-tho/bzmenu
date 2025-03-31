@@ -14,7 +14,7 @@ use bluer::Session;
 use rust_i18n::t;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
-use tokio::{runtime::Handle, sync::mpsc::UnboundedSender};
+use tokio::sync::mpsc::UnboundedSender;
 
 pub struct App {
     pub running: bool,
@@ -382,41 +382,32 @@ impl App {
         self.scanner.start_discovery(SCAN_DURATION).await?;
 
         let scanner_clone = self.scanner.clone();
-        let mut controller_clone = self.controller.clone();
         let log_sender_clone = self.log_sender.clone();
 
-        let notification_id = match self.notification_manager.send_scan_notification(move || {
-            try_send_log!(
-                log_sender_clone,
-                "User cancelled Bluetooth scan".to_string()
-            );
+        let _ =
+            self.notification_manager
+                .send_scan_progress_notification(SCAN_DURATION, move || {
+                    try_send_log!(
+                        log_sender_clone,
+                        "User cancelled Bluetooth scan".to_string()
+                    );
 
-            Handle::current().block_on(async {
-                let _ = scanner_clone.stop_discovery().await;
-                let _ = controller_clone.refresh().await;
-            });
-        }) {
-            Ok(id) => Some(id),
-            Err(_) => None,
-        };
+                    let rt = tokio::runtime::Builder::new_current_thread()
+                        .enable_all()
+                        .build()
+                        .unwrap();
+
+                    rt.block_on(async {
+                        let _ = scanner_clone.stop_discovery().await;
+                    });
+                });
 
         self.scanner.wait_for_discovery_completion().await?;
 
         self.controller.refresh().await?;
 
-        if let Some(id) = notification_id {
-            let _ = self.notification_manager.close_notification(id);
-        }
-
         let msg = t!("notifications.bt.scan_completed");
         self.log_sender.send(msg.to_string()).unwrap_or_default();
-        try_send_notification!(
-            self.notification_manager,
-            None,
-            Some(msg.to_string()),
-            Some("ok"),
-            None
-        );
 
         Ok(())
     }
