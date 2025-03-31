@@ -3,8 +3,8 @@ use notify_rust::{Notification, NotificationHandle, Timeout};
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
+    thread::spawn,
 };
-use tokio::task::spawn_blocking;
 
 use crate::bz::pairing::PairingConfirmationHandler;
 use crate::icons::Icons;
@@ -110,7 +110,7 @@ impl NotificationManager {
 
         match notification.show() {
             Ok(handle) => {
-                spawn_blocking(move || {
+                spawn(move || {
                     handle.wait_for_action(|action| match action {
                         "default" | "confirm" => on_confirm(),
                         "reject" | "__closed" => on_reject(),
@@ -141,7 +141,7 @@ impl NotificationManager {
             Ok(handle) => {
                 let id = handle.id();
 
-                spawn_blocking(move || {
+                spawn(move || {
                     handle.wait_for_action(|action| {
                         if action == "default" {
                             on_cancel();
