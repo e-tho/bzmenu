@@ -1,9 +1,12 @@
 use anyhow::{anyhow, Result};
-use notify_rust::{Notification, NotificationHandle, Timeout};
+use notify_rust::{CloseReason, Hint, Notification, NotificationHandle, Timeout};
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex},
-    thread::spawn,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
+    thread::{sleep, spawn},
 };
 
 use crate::bz::pairing::PairingConfirmationHandler;
@@ -123,35 +126,107 @@ impl NotificationManager {
         }
     }
 
-    pub fn send_scan_notification(&self, on_cancel: impl FnOnce() + Send + 'static) -> Result<u32> {
-        let icon_name = self.icons.get_xdg_icon("scan");
+    // TODO: Follow https://github.com/hoodie/notify-rust/issues/115
+    // "Allow an on_close handler without consuming the NotificationHandle"
+    // This would simplify our implementation by avoiding the need for a separate thread
+    // and allowing us to update the notification directly after setting up the on_close handler.
+    pub fn send_scan_progress_notification(
+        &self,
+        scan_duration_sec: u64,
+        on_cancel: impl FnOnce() + Send + 'static,
+    ) -> Result<u32> {
+        let icon_name = self.icons.get_xdg_icon("bluetooth");
 
+        let summary = t!("BlueZ Menu");
         let body = t!("notifications.bt.scan_in_progress");
-        let stop_text = t!("notifications.bt.scan_stop_action");
 
-        let mut notification = Notification::new();
-        notification
-            .summary("BlueZ Menu")
+        let notification_handle = Notification::new()
+            .summary(&summary)
             .body(&body)
             .icon(&icon_name)
             .timeout(Timeout::Never)
-            .action("default", &stop_text);
+            .hint(Hint::Transient(true))
+            .hint(Hint::Category("progress".to_string()))
+            .hint(Hint::CustomInt("value".to_string(), 0))
+            .show()?;
 
-        match notification.show() {
-            Ok(handle) => {
-                let id = handle.id();
+        let id = notification_handle.id();
+
+        spawn({
+            let summary = summary.clone();
+            let body = body.clone();
+            let icon_name = icon_name.clone();
+
+            let on_cancel_wrapped = Arc::new(Mutex::new(Some(Box::new(on_cancel))));
+
+            move || {
+                let start_time = std::time::Instant::now();
+                let update_interval = std::time::Duration::from_millis(500);
+                let total_duration = std::time::Duration::from_secs(scan_duration_sec);
+
+                let cancelled = Arc::new(AtomicBool::new(false));
+                let cancelled_for_loop = cancelled.clone();
+
+                let on_cancel_for_close = on_cancel_wrapped.clone();
+                let cancelled_for_close = cancelled.clone();
 
                 spawn(move || {
-                    handle.wait_for_action(|action| {
-                        if action == "default" {
-                            on_cancel();
+                    notification_handle.on_close(|reason| {
+                        if let CloseReason::Dismissed = reason {
+                            if let Ok(mut callback_opt) = on_cancel_for_close.lock() {
+                                if let Some(callback) = callback_opt.take() {
+                                    callback();
+                                }
+                            }
+                            cancelled_for_close.store(true, Ordering::SeqCst);
                         }
                     });
                 });
 
-                Ok(id)
+                while !cancelled_for_loop.load(Ordering::SeqCst) {
+                    let elapsed = start_time.elapsed();
+                    if elapsed >= total_duration {
+                        break;
+                    }
+
+                    let progress =
+                        ((elapsed.as_secs_f64() / total_duration.as_secs_f64()) * 100.0) as i32;
+
+                    let update_result = Notification::new()
+                        .id(id)
+                        .summary(&summary)
+                        .body(&body)
+                        .icon(&icon_name)
+                        .timeout(Timeout::Never)
+                        .hint(Hint::Transient(true))
+                        .hint(Hint::Category("progress".to_string()))
+                        .hint(Hint::CustomInt("value".to_string(), progress.clamp(0, 100)))
+                        .show();
+
+                    if update_result.is_err() {
+                        if let Ok(mut callback_opt) = on_cancel_wrapped.lock() {
+                            if let Some(callback) = callback_opt.take() {
+                                callback();
+                            }
+                        }
+                        break;
+                    }
+
+                    sleep(update_interval);
+                }
+
+                if start_time.elapsed() >= total_duration {
+                    let _ = Notification::new()
+                        .id(id)
+                        .summary(&summary)
+                        .body(&t!("notifications.bt.scan_completed"))
+                        .icon(&icon_name)
+                        .timeout(Timeout::Milliseconds(2000))
+                        .show();
+                }
             }
-            Err(err) => Err(anyhow!("Failed to show notification: {}", err)),
-        }
+        });
+
+        Ok(id)
     }
 }
