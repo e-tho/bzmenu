@@ -122,4 +122,36 @@ impl NotificationManager {
             Err(err) => Err(anyhow!("Failed to show notification: {}", err)),
         }
     }
+
+    pub fn send_scan_notification(&self, on_cancel: impl FnOnce() + Send + 'static) -> Result<u32> {
+        let icon_name = self.icons.get_xdg_icon("scan");
+
+        let body = t!("notifications.bt.scan_in_progress");
+        let stop_text = t!("notifications.bt.scan_stop_action");
+
+        let mut notification = Notification::new();
+        notification
+            .summary("BlueZ Menu")
+            .body(&body)
+            .icon(&icon_name)
+            .timeout(Timeout::Never)
+            .action("default", &stop_text);
+
+        match notification.show() {
+            Ok(handle) => {
+                let id = handle.id();
+
+                spawn_blocking(move || {
+                    handle.wait_for_action(|action| {
+                        if action == "default" {
+                            on_cancel();
+                        }
+                    });
+                });
+
+                Ok(id)
+            }
+            Err(err) => Err(anyhow!("Failed to show notification: {}", err)),
+        }
+    }
 }

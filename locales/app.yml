@@ -98,11 +98,14 @@ notifications:
       en: "Bluetooth scan already in progress"
       fr: "Recherche Bluetooth déjà en cours"
     scan_in_progress:
-      en: "Searching for Bluetooth devices"
-      fr: "Recherche d'appareils Bluetooth en cours"
+      en: "Searching for Bluetooth devices. Click to stop."
+      fr: "Recherche d'appareils Bluetooth en cours. Cliquez pour arrêter."
     scan_completed:
       en: "Bluetooth scan completed"
       fr: "Recherche Bluetooth terminée"
+    scan_stop_action:
+      en: "Stop Scan"
+      fr: "Arrêter la recherche"
     device_connected:
       en: "Connected to %{device_name}"
       fr: "Connecté à %{device_name}"
