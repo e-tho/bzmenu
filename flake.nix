@@ -42,13 +42,15 @@
             lockFile = ./Cargo.lock;
           };
 
-          buildInputs = with pkgs; [
+          nativeBuildInputs = with pkgs; [
             pkg-config
+          ];
+
+          buildInputs = with pkgs; [
             openssl
             dbus.dev
             bluez
           ];
-
           doCheck = true;
           CARGO_BUILD_INCREMENTAL = "false";
           RUST_BACKTRACE = "full";
@@ -70,11 +72,14 @@
         devShells.default =
           with pkgs;
           mkShell {
+            nativeBuildInputs = [
+              pkg-config
+            ];
+
             buildInputs = [
               (rust-bin.stable.latest.default.override {
                 extensions = [ "rust-src" ];
               })
-              pkg-config
               openssl
               dbus.dev
               bluez
