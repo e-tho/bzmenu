@@ -47,10 +47,9 @@
           ];
 
           buildInputs = with pkgs; [
-            openssl
             dbus.dev
-            bluez
           ];
+
           doCheck = true;
           CARGO_BUILD_INCREMENTAL = "false";
           RUST_BACKTRACE = "full";
@@ -80,9 +79,7 @@
               (rust-bin.stable.latest.default.override {
                 extensions = [ "rust-src" ];
               })
-              openssl
               dbus.dev
-              bluez
             ];
           };
       }
