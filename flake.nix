@@ -53,7 +53,6 @@
           doCheck = true;
           CARGO_BUILD_INCREMENTAL = "false";
           RUST_BACKTRACE = "full";
-          copyLibs = true;
 
           meta = {
             description = "Menu-driven Bluetooth management interface for Linux";
@@ -73,14 +72,16 @@
           mkShell {
             nativeBuildInputs = [
               pkg-config
-            ];
-
-            buildInputs = [
               (rust-bin.stable.latest.default.override {
                 extensions = [ "rust-src" ];
               })
+            ];
+
+            buildInputs = [
               dbus.dev
             ];
+
+            inherit (self.packages.${system}.default) CARGO_BUILD_INCREMENTAL RUST_BACKTRACE;
           };
       }
     );
