@@ -315,7 +315,13 @@ impl App {
         let available_options = menu.get_paired_device_options(device);
 
         if let Some(option) = menu
-            .show_device_options(menu_command, icon_type, spaces, available_options)
+            .show_device_options(
+                menu_command,
+                icon_type,
+                spaces,
+                available_options,
+                &device.alias,
+            )
             .await?
         {
             match option {
@@ -353,7 +359,13 @@ impl App {
         let available_options = vec![DeviceMenuOptions::Connect];
 
         if let Some(DeviceMenuOptions::Connect) = menu
-            .show_device_options(menu_command, icon_type, spaces, available_options)
+            .show_device_options(
+                menu_command,
+                icon_type,
+                spaces,
+                available_options,
+                &device.alias,
+            )
             .await?
         {
             self.perform_device_connection(device).await?;

@@ -417,6 +417,7 @@ impl Menu {
         icon_type: &str,
         spaces: usize,
         available_options: Vec<DeviceMenuOptions>,
+        device_name: &str,
     ) -> Result<Option<DeviceMenuOptions>> {
         let mut input = String::new();
 
@@ -433,7 +434,10 @@ impl Menu {
             input.push_str(&format!("{}\n", option_text));
         }
 
-        let menu_output = self.run_menu_command(menu_command, Some(&input), icon_type, None)?;
+        let prompt = t!("menus.device.prompt", device_name = device_name);
+
+        let menu_output =
+            self.run_menu_command(menu_command, Some(&input), icon_type, Some(&prompt))?;
 
         if let Some(output) = menu_output {
             let cleaned_output = self.clean_menu_output(&output, icon_type);
