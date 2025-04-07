@@ -259,7 +259,6 @@ impl Menu {
                     return Err(anyhow!("No custom menu command provided"));
                 }
             }
-            _ => return Ok(None),
         };
 
         command.stdin(Stdio::piped()).stdout(Stdio::piped());
