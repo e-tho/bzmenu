@@ -16,6 +16,9 @@ menus:
           en: "Device"
           fr: "Appareil"
   device:
+    prompt:
+      en: "Manage %{device_name}"
+      fr: "Gérer %{device_name}"
     options:
       connect:
         name:
