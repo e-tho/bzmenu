@@ -25,7 +25,8 @@ impl Icons {
         font_icons.insert("settings", '\u{f08bb}');
         font_icons.insert("disable_adapter", '\u{f00b2}');
         font_icons.insert("power_on_device", '\u{f0425}');
-        font_icons.insert("trust", '\u{f05e0}');
+        font_icons.insert("trust", '\u{f0cc8}');
+        font_icons.insert("revoke_trust", '\u{f099c}');
         font_icons.insert("forget", '\u{f0377}');
 
         font_icons.insert("enable_pairable", '\u{f0339}');
@@ -74,7 +75,8 @@ impl Icons {
         xdg_icons.insert("settings", "preferences-system-symbolic");
         xdg_icons.insert("disable_adapter", "bluetooth-disabled-symbolic");
         xdg_icons.insert("power_on_device", "bluetooth-symbolic");
-        xdg_icons.insert("trust", "security-high-symbolic");
+        xdg_icons.insert("trust", "emblem-default-symbolic");
+        xdg_icons.insert("revoke_trust", "action-unavailable-symbolic");
         xdg_icons.insert("forget", "list-remove-symbolic");
 
         xdg_icons.insert("enable_pairable", "network-transmit-receive-symbolic");

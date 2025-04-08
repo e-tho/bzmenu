@@ -28,10 +28,14 @@ menus:
         name:
           en: "Disconnect"
           fr: "Déconnecter"
-      toggle_trust:
+      trust:
         name:
-          en: "Toggle Trust"
-          fr: "Changer la confiance"
+          en: "Trust Device"
+          fr: "Faire confiance à l'appareil"
+      revoke_trust:
+        name:
+          en: "Revoke Trust"
+          fr: "Révoquer la confiance"
       forget:
         name:
           en: "Forget Device"

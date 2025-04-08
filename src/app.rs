@@ -335,8 +335,15 @@ impl App {
                         self.perform_device_disconnection(device).await?;
                     }
                 }
-                DeviceMenuOptions::ToggleTrust => {
-                    self.perform_toggle_trust(device).await?;
+                DeviceMenuOptions::Trust => {
+                    if !device.is_trusted {
+                        self.perform_trust_device(device, true).await?;
+                    }
+                }
+                DeviceMenuOptions::RevokeTrust => {
+                    if device.is_trusted {
+                        self.perform_trust_device(device, false).await?;
+                    }
                 }
                 DeviceMenuOptions::Forget => {
                     self.perform_forget_device(device).await?;
@@ -527,21 +534,19 @@ impl App {
         Ok(())
     }
 
-    async fn perform_toggle_trust(&self, device: &crate::bz::device::Device) -> Result<()> {
-        let new_state = !device.is_trusted;
-
+    async fn perform_trust_device(&self, device: &crate::bz::device::Device, trust: bool) -> Result<()> {
         try_send_log!(
             self.log_sender,
             format!(
                 "{} trust for device: {}",
-                if new_state { "Enabling" } else { "Disabling" },
+                if trust { "Enabling" } else { "Revoking" },
                 device.alias
             )
         );
-
-        device.set_trusted(new_state).await?;
-
-        let msg = if new_state {
+    
+        device.set_trusted(trust).await?;
+    
+        let msg = if trust {
             t!(
                 "notifications.bt.device_trusted",
                 device_name = device.alias
@@ -552,7 +557,7 @@ impl App {
                 device_name = device.alias
             )
         };
-
+    
         try_send_log!(self.log_sender, msg.to_string());
         try_send_notification!(
             self.notification_manager,
@@ -561,7 +566,7 @@ impl App {
             Some("bluetooth"),
             None
         );
-
+    
         Ok(())
     }
 
