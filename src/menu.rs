@@ -52,7 +52,8 @@ impl MainMenuOptions {
 pub enum DeviceMenuOptions {
     Connect,
     Disconnect,
-    ToggleTrust,
+    Trust,
+    RevokeTrust,
     Forget,
 }
 
@@ -63,8 +64,11 @@ impl DeviceMenuOptions {
             s if s == t!("menus.device.options.disconnect.name") => {
                 Some(DeviceMenuOptions::Disconnect)
             }
-            s if s == t!("menus.device.options.toggle_trust.name") => {
-                Some(DeviceMenuOptions::ToggleTrust)
+            s if s == t!("menus.device.options.trust.name") => {
+                Some(DeviceMenuOptions::Trust)
+            }
+            s if s == t!("menus.device.options.revoke_trust.name") => {
+                Some(DeviceMenuOptions::RevokeTrust)
             }
             s if s == t!("menus.device.options.forget.name") => Some(DeviceMenuOptions::Forget),
             _ => None,
@@ -75,7 +79,8 @@ impl DeviceMenuOptions {
         match self {
             DeviceMenuOptions::Connect => t!("menus.device.options.connect.name"),
             DeviceMenuOptions::Disconnect => t!("menus.device.options.disconnect.name"),
-            DeviceMenuOptions::ToggleTrust => t!("menus.device.options.toggle_trust.name"),
+            DeviceMenuOptions::Trust => t!("menus.device.options.trust.name"),
+            DeviceMenuOptions::RevokeTrust => t!("menus.device.options.revoke_trust.name"),
             DeviceMenuOptions::Forget => t!("menus.device.options.forget.name"),
         }
     }
@@ -432,7 +437,8 @@ impl Menu {
             let icon_key = match option {
                 DeviceMenuOptions::Connect => "connect",
                 DeviceMenuOptions::Disconnect => "disconnect",
-                DeviceMenuOptions::ToggleTrust => "trust",
+                DeviceMenuOptions::Trust => "trust",
+                DeviceMenuOptions::RevokeTrust => "revoke_trust",
                 DeviceMenuOptions::Forget => "forget",
             };
 
@@ -463,7 +469,12 @@ impl Menu {
             options.push(DeviceMenuOptions::Connect);
         }
 
-        options.push(DeviceMenuOptions::ToggleTrust);
+        if device.is_trusted {
+            options.push(DeviceMenuOptions::RevokeTrust);
+        } else {
+            options.push(DeviceMenuOptions::Trust);
+        }
+
         options.push(DeviceMenuOptions::Forget);
 
         options
