@@ -14,7 +14,7 @@ use bluer::Session;
 use rust_i18n::t;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
-use tokio::sync::mpsc::UnboundedSender;
+use tokio::{runtime::Builder, sync::mpsc::UnboundedSender};
 
 pub struct App {
     pub running: bool,
@@ -403,23 +403,30 @@ impl App {
         let scanner_clone = self.scanner.clone();
         let log_sender_clone = self.log_sender.clone();
 
-        let _ =
-            self.notification_manager
-                .send_scan_progress_notification(SCAN_DURATION, move || {
+        let progress_msg = t!("notifications.bt.scan_in_progress");
+        let completed_msg = t!("notifications.bt.scan_completed");
+
+        let _ = self.notification_manager.send_progress_notification(
+            SCAN_DURATION,
+            move || {
                     try_send_log!(
                         log_sender_clone,
                         "User cancelled Bluetooth scan".to_string()
                     );
 
-                    let rt = tokio::runtime::Builder::new_current_thread()
-                        .enable_all()
-                        .build()
-                        .unwrap();
+                let rt = Builder::new_current_thread().enable_all().build().unwrap();
 
                     rt.block_on(async {
                         let _ = scanner_clone.stop_discovery().await;
                     });
-                });
+            },
+            None,
+            Some(progress_msg.to_string()),
+            Some("scan"),
+            None,
+            Some(completed_msg.to_string()),
+            Some("ok"),
+        );
 
         self.scanner.wait_for_discovery_completion().await?;
 
