@@ -10,12 +10,25 @@
 
 `bzmenu` (**B**lue**Z** **Menu**) allows using your menu of choice to manage Bluetooth.
 
-## Prerequisites
+## Dependencies
 
-[BlueZ](https://www.bluez.org) must be installed, along with either a supported launcher or any `stdin` mode launcher.
+### Build
 
-> [!NOTE]
-> To ensure proper icon display, you can either install [nerdfonts](https://www.nerdfonts.com) for font-based icons (usage is optional) or use the `--icon xdg` flag for image-based icons from your XDG theme.
+- [`Rust`](https://www.rust-lang.org) (includes `cargo`)
+- [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config) – For detecting required libraries
+- [`dbus`](https://www.freedesktop.org/wiki/Software/dbus) – For D-Bus integration headers
+
+### Runtime
+
+- [`bluetoothd`](http://www.bluez.org) – BlueZ daemon
+- [`dbus`](https://www.freedesktop.org/wiki/Software/dbus) – For communicating with `bluetoothd`
+- A launcher with `stdin` mode support
+
+#### Optional
+
+- [NerdFonts](https://www.nerdfonts.com) – For font-based icons (default mode)
+- [XDG icon theme](https://specifications.freedesktop.org/icon-theme-spec/latest) – For image-based icons (used with `-i xdg`, included with DEs or can be installed manually)
+- [Notification daemon](https://specifications.freedesktop.org/notification-spec/latest) – For system notifications (e.g. `dunst`, `fnott`, included with DEs or can be installed manually)
 
 ### Compatibility
 
