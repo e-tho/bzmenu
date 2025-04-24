@@ -1,10 +1,37 @@
 use std::collections::HashMap;
 
 #[derive(Clone)]
+pub struct IconDefinition {
+    single: String,
+    list: String,
+}
+
+impl IconDefinition {
+    pub fn simple(icon: &str) -> Self {
+        Self {
+            single: icon.to_string(),
+            list: icon.to_string(),
+        }
+    }
+
+    pub fn with_fallbacks(single: Option<&str>, list: &str) -> Self {
+        let single_icon = match single {
+            Some(icon) => icon.to_string(),
+            None => list.split(',').next().unwrap_or("").trim().to_string(),
+        };
+
+        Self {
+            single: single_icon,
+            list: list.to_string(),
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct Icons {
     generic_icons: HashMap<&'static str, char>,
     font_icons: HashMap<&'static str, char>,
-    xdg_icons: HashMap<&'static str, &'static str>,
+    xdg_icons: HashMap<&'static str, IconDefinition>,
 }
 
 impl Icons {
@@ -65,55 +92,224 @@ impl Icons {
         font_icons.insert("paired", '\u{f119f}');
         font_icons.insert("trusted", '\u{f0cc8}');
 
-        xdg_icons.insert("bluetooth", "bluetooth-symbolic");
-        xdg_icons.insert("bluetooth_connected", "bluetooth-active-symbolic");
-        xdg_icons.insert("connected", "bluetooth-active-symbolic");
-        xdg_icons.insert("disconnected", "bluetooth-disabled-symbolic");
-        xdg_icons.insert("connect", "entries-linked-symbolic");
-        xdg_icons.insert("disconnect", "entries-unlinked-symbolic");
-        xdg_icons.insert("scan", "emblem-synchronizing-symbolic");
-        xdg_icons.insert("settings", "preferences-system-symbolic");
-        xdg_icons.insert("disable_adapter", "bluetooth-disabled-symbolic");
-        xdg_icons.insert("power_on_device", "bluetooth-symbolic");
-        xdg_icons.insert("trust", "emblem-default-symbolic");
-        xdg_icons.insert("revoke_trust", "action-unavailable-symbolic");
-        xdg_icons.insert("forget", "list-remove-symbolic");
+        xdg_icons.insert(
+            "bluetooth",
+            IconDefinition::with_fallbacks(
+                None,
+                "bluetooth-symbolic,network-bluetooth-symbolic,bluetooth",
+            ),
+        );
+        xdg_icons.insert(
+            "connected",
+            IconDefinition::with_fallbacks(
+                None,
+                "bluetooth-active-symbolic,network-bluetooth-activated-symbolic,bluetooth-active",
+            ),
+        );
+        xdg_icons.insert(
+            "disconnected",
+            IconDefinition::with_fallbacks(None, "bluetooth-disabled-symbolic,network-bluetooth-inactive-symbolic,bluetooth-disabled"),
+        );
+        xdg_icons.insert(
+            "connect",
+            IconDefinition::with_fallbacks(
+                Some("network-connect-symbolic"),
+                "entries-linked-symbolic,network-connect-symbolic,link-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "disconnect",
+            IconDefinition::with_fallbacks(
+                Some("network-disconnect-symbolic"),
+                "entries-unlinked-symbolic,network-disconnect-symbolic,media-eject-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "scan",
+            IconDefinition::with_fallbacks(
+                None,
+                "sync-synchronizing-symbolic,emblem-synchronizing-symbolic,view-refresh-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "settings",
+            IconDefinition::simple("preferences-system-symbolic"),
+        );
+        xdg_icons.insert(
+            "disable_adapter",
+            IconDefinition::with_fallbacks(
+                None,
+                "bluetooth-disabled-symbolic,network-bluetooth-inactive-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "power_on_device",
+            IconDefinition::simple("bluetooth-symbolic"),
+        );
+        xdg_icons.insert("trust", IconDefinition::simple("emblem-default-symbolic"));
+        xdg_icons.insert(
+            "revoke_trust",
+            IconDefinition::simple("action-unavailable-symbolic"),
+        );
+        xdg_icons.insert("forget", IconDefinition::simple("list-remove-symbolic"));
 
-        xdg_icons.insert("enable_pairable", "network-transmit-receive-symbolic");
-        xdg_icons.insert("disable_pairable", "network-offline-symbolic");
+        xdg_icons.insert(
+            "enable_pairable",
+            IconDefinition::simple("changes-allow-symbolic"),
+        );
+        xdg_icons.insert(
+            "disable_pairable",
+            IconDefinition::simple("changes-prevent-symbolic"),
+        );
+        xdg_icons.insert(
+            "enable_discoverable",
+            IconDefinition::with_fallbacks(
+                None,
+                "view-reveal-symbolic,view-visible-symbolic,object-visible-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "disable_discoverable",
+            IconDefinition::with_fallbacks(
+                None,
+                "view-conceal-symbolic,view-hidden-symbolic,object-hidden-symbolic",
+            ),
+        );
 
-        xdg_icons.insert("enable_discoverable", "object-visible-symbolic");
-        xdg_icons.insert("disable_discoverable", "object-hidden-symbolic");
+        xdg_icons.insert("device", IconDefinition::simple("drive-harddisk-symbolic"));
+        xdg_icons.insert(
+            "phone",
+            IconDefinition::with_fallbacks(None, "phone-symbolic,drive-harddisk-symbolic"),
+        );
+        xdg_icons.insert(
+            "headphones",
+            IconDefinition::with_fallbacks(
+                None,
+                "audio-headphones-symbolic,drive-harddisk-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "keyboard",
+            IconDefinition::with_fallbacks(None, "input-keyboard-symbolic,drive-harddisk-symbolic"),
+        );
+        xdg_icons.insert(
+            "mouse",
+            IconDefinition::with_fallbacks(None, "input-mouse-symbolic,drive-harddisk-symbolic"),
+        );
+        xdg_icons.insert(
+            "speaker",
+            IconDefinition::with_fallbacks(None, "audio-speakers-symbolic,drive-harddisk-symbolic"),
+        );
+        xdg_icons.insert(
+            "gamepad",
+            IconDefinition::with_fallbacks(
+                None,
+                "input-gaming-symbolic,input-gamepad-symbolic,drive-harddisk-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "computer",
+            IconDefinition::with_fallbacks(None, "computer-symbolic,drive-harddisk-symbolic"),
+        );
+        xdg_icons.insert(
+            "laptop",
+            IconDefinition::with_fallbacks(
+                None,
+                "laptop-symbolic,computer-laptop-symbolic,computer-symbolic,drive-harddisk-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "tablet",
+            IconDefinition::with_fallbacks(None, "tablet-symbolic,drive-harddisk-symbolic"),
+        );
+        xdg_icons.insert(
+            "watch",
+            IconDefinition::with_fallbacks(None, "smartwatch-symbolic,drive-harddisk-symbolic"),
+        );
+        xdg_icons.insert(
+            "tv",
+            IconDefinition::with_fallbacks(
+                None,
+                "video-display-symbolic,preferences-desktop-display-randr-symbolic,drive-harddisk-symbolic",
+            ),
+        );
+        xdg_icons.insert("display", IconDefinition::with_fallbacks(None,"video-display-symbolic,preferences-desktop-display-randr-symbolic,drive-harddisk-symbolic"));
 
-        xdg_icons.insert("device", "drive-harddisk-symbolic");
-        xdg_icons.insert("phone", "phone-symbolic");
-        xdg_icons.insert("headphones", "audio-headphones-symbolic");
-        xdg_icons.insert("keyboard", "input-keyboard-symbolic");
-        xdg_icons.insert("mouse", "input-mouse-symbolic");
-        xdg_icons.insert("speaker", "audio-speakers-symbolic");
-        xdg_icons.insert("gamepad", "input-gaming-symbolic");
-        xdg_icons.insert("computer", "computer-symbolic");
-        xdg_icons.insert("laptop", "laptop-symbolic");
-        xdg_icons.insert("tablet", "tablet-symbolic");
-        xdg_icons.insert("watch", "smartwatch-symbolic");
-        xdg_icons.insert("tv", "video-display-symbolic");
-        xdg_icons.insert("display", "video-display-symbolic");
+        xdg_icons.insert(
+            "battery_100",
+            IconDefinition::with_fallbacks(
+                Some("battery-full-symbolic"),
+                "battery-100-symbolic,battery-full-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "battery_90",
+            IconDefinition::with_fallbacks(
+                Some("battery-good-symbolic"),
+                "battery-090-symbolic,battery-good-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "battery_80",
+            IconDefinition::with_fallbacks(
+                Some("battery-good-symbolic"),
+                "battery-080-symbolic,battery-good-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "battery_70",
+            IconDefinition::with_fallbacks(
+                Some("battery-good-symbolic"),
+                "battery-070-symbolic,battery-good-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "battery_60",
+            IconDefinition::with_fallbacks(
+                Some("battery-good-symbolic"),
+                "battery-060-symbolic,battery-good-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "battery_50",
+            IconDefinition::with_fallbacks(
+                Some("battery-medium-symbolic"),
+                "battery-050-symbolic,battery-medium-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "battery_40",
+            IconDefinition::with_fallbacks(
+                Some("battery-medium-symbolic"),
+                "battery-040-symbolic,battery-medium-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "battery_30",
+            IconDefinition::with_fallbacks(
+                Some("battery-low-symbolic"),
+                "battery-030-symbolic,battery-low-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "battery_20",
+            IconDefinition::with_fallbacks(
+                Some("battery-low-symbolic"),
+                "battery-020-symbolic,battery-low-symbolic",
+            ),
+        );
+        xdg_icons.insert(
+            "battery_10",
+            IconDefinition::with_fallbacks(
+                Some("battery-caution-symbolic"),
+                "battery-010-symbolic,battery-caution-symbolic",
+            ),
+        );
 
-        xdg_icons.insert("battery_100", "battery-full-symbolic");
-        xdg_icons.insert("battery_90", "battery-good-symbolic");
-        xdg_icons.insert("battery_80", "battery-good-symbolic");
-        xdg_icons.insert("battery_70", "battery-good-symbolic");
-        xdg_icons.insert("battery_60", "battery-good-symbolic");
-        xdg_icons.insert("battery_50", "battery-medium-symbolic");
-        xdg_icons.insert("battery_40", "battery-medium-symbolic");
-        xdg_icons.insert("battery_30", "battery-low-symbolic");
-        xdg_icons.insert("battery_20", "battery-low-symbolic");
-        xdg_icons.insert("battery_10", "battery-caution-symbolic");
-
-        xdg_icons.insert("ok", "emblem-default-symbolic");
-        xdg_icons.insert("error", "dialog-error-symbolic");
-        xdg_icons.insert("paired", "emblem-checked-symbolic");
-        xdg_icons.insert("trusted", "security-high-symbolic");
+        xdg_icons.insert("ok", IconDefinition::simple("emblem-default-symbolic"));
+        xdg_icons.insert("error", IconDefinition::simple("dialog-error-symbolic"));
+        xdg_icons.insert("paired", IconDefinition::simple("emblem-checked-symbolic"));
+        xdg_icons.insert("trusted", IconDefinition::simple("security-high-symbolic"));
 
         Icons {
             font_icons,
@@ -132,7 +328,7 @@ impl Icons {
             "xdg" => self
                 .xdg_icons
                 .get(key)
-                .map(|&icon| icon.to_string())
+                .map(|icon_definition| icon_definition.list.clone())
                 .unwrap_or_default(),
             "generic" => self
                 .generic_icons
@@ -146,7 +342,14 @@ impl Icons {
     pub fn get_xdg_icon(&self, key: &str) -> String {
         self.xdg_icons
             .get(key)
-            .map(|&icon| icon.to_string())
+            .map(|icon_def| icon_def.single.clone())
+            .unwrap_or_default()
+    }
+
+    pub fn get_xdg_icon_list(&self, key: &str) -> String {
+        self.xdg_icons
+            .get(key)
+            .map(|icon_def| icon_def.list.clone())
             .unwrap_or_default()
     }
 
