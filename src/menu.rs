@@ -64,9 +64,7 @@ impl DeviceMenuOptions {
             s if s == t!("menus.device.options.disconnect.name") => {
                 Some(DeviceMenuOptions::Disconnect)
             }
-            s if s == t!("menus.device.options.trust.name") => {
-                Some(DeviceMenuOptions::Trust)
-            }
+            s if s == t!("menus.device.options.trust.name") => Some(DeviceMenuOptions::Trust),
             s if s == t!("menus.device.options.revoke_trust.name") => {
                 Some(DeviceMenuOptions::RevokeTrust)
             }
@@ -544,7 +542,10 @@ impl Menu {
         icon_type: &str,
         spaces: usize,
     ) -> Option<AdapterMenuOptions> {
-        let options = vec![("power_on_device", AdapterMenuOptions::PowerOnDevice.to_str())];
+        let options = vec![(
+            "power_on_device",
+            AdapterMenuOptions::PowerOnDevice.to_str(),
+        )];
 
         let input = self.get_icon_text(options, icon_type, spaces);
 

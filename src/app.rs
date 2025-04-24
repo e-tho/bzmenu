@@ -409,16 +409,16 @@ impl App {
         let _ = self.notification_manager.send_progress_notification(
             SCAN_DURATION,
             move || {
-                    try_send_log!(
-                        log_sender_clone,
-                        "User cancelled Bluetooth scan".to_string()
-                    );
+                try_send_log!(
+                    log_sender_clone,
+                    "User cancelled Bluetooth scan".to_string()
+                );
 
                 let rt = Builder::new_current_thread().enable_all().build().unwrap();
 
-                    rt.block_on(async {
-                        let _ = scanner_clone.stop_discovery().await;
-                    });
+                rt.block_on(async {
+                    let _ = scanner_clone.stop_discovery().await;
+                });
             },
             None,
             Some(progress_msg.to_string()),
@@ -541,7 +541,11 @@ impl App {
         Ok(())
     }
 
-    async fn perform_trust_device(&self, device: &crate::bz::device::Device, trust: bool) -> Result<()> {
+    async fn perform_trust_device(
+        &self,
+        device: &crate::bz::device::Device,
+        trust: bool,
+    ) -> Result<()> {
         try_send_log!(
             self.log_sender,
             format!(
@@ -550,9 +554,9 @@ impl App {
                 device.alias
             )
         );
-    
+
         device.set_trusted(trust).await?;
-    
+
         let msg = if trust {
             t!(
                 "notifications.bt.device_trusted",
@@ -564,7 +568,7 @@ impl App {
                 device_name = device.alias
             )
         };
-    
+
         try_send_log!(self.log_sender, msg.to_string());
         try_send_notification!(
             self.notification_manager,
@@ -573,7 +577,7 @@ impl App {
             Some("bluetooth"),
             None
         );
-    
+
         Ok(())
     }
 
