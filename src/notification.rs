@@ -126,7 +126,7 @@ impl NotificationManager {
         }
     }
 
-    // TODO: Follow https://github.com/hoodie/notify-rust/issues/115
+    // TODO: Follow https://github.com/hoodie/notify-rust/issues/199
     // "Allow an on_close handler without consuming the NotificationHandle"
     // This would simplify our implementation by avoiding the need for a separate thread
     // and allowing us to update the notification directly after setting up the on_close handler.
