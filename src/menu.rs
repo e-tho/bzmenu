@@ -544,7 +544,7 @@ impl Menu {
         icon_type: &str,
         spaces: usize,
     ) -> Option<AdapterMenuOptions> {
-        let options = vec![("power_on", AdapterMenuOptions::PowerOnDevice.to_str())];
+        let options = vec![("power_on_device", AdapterMenuOptions::PowerOnDevice.to_str())];
 
         let input = self.get_icon_text(options, icon_type, spaces);
 
