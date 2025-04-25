@@ -1,5 +1,5 @@
 {
-  description = "Menu-driven Bluetooth management interface for Linux";
+  description = "Launcher-driven Bluetooth manager for Linux";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -55,7 +55,7 @@
           RUST_BACKTRACE = "full";
 
           meta = {
-            description = "Menu-driven Bluetooth management interface for Linux";
+            description = "Launcher-driven Bluetooth manager for Linux";
             homepage = "https://github.com/e-tho/bzmenu";
             license = pkgs.lib.licenses.gpl3;
             maintainers = [
