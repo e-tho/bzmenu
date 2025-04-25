@@ -194,6 +194,7 @@ impl App {
                     None,
                     Some(msg.to_string()),
                     Some("bluetooth"),
+                    None,
                     None
                 );
             }
@@ -213,6 +214,7 @@ impl App {
                     None,
                     Some(msg.to_string()),
                     Some("bluetooth"),
+                    None,
                     None
                 );
             }
@@ -246,6 +248,7 @@ impl App {
                         None,
                         Some(t!("notifications.bt.adapter_enabled").to_string()),
                         Some("bluetooth"),
+                        None,
                         None
                     );
                 }
@@ -391,6 +394,7 @@ impl App {
                 None,
                 Some(msg.to_string()),
                 Some("bluetooth"),
+                None,
                 None
             );
             return Ok(());
@@ -406,7 +410,7 @@ impl App {
         let progress_msg = t!("notifications.bt.scan_in_progress");
         let completed_msg = t!("notifications.bt.scan_completed");
 
-        let _ = self.notification_manager.send_progress_notification(
+        let id = self.notification_manager.send_progress_notification(
             SCAN_DURATION,
             move || {
                 try_send_log!(
@@ -420,20 +424,25 @@ impl App {
                     let _ = scanner_clone.stop_discovery().await;
                 });
             },
-            None,
-            Some(progress_msg.to_string()),
+            progress_msg.to_string(),
             Some("scan"),
-            None,
-            Some(completed_msg.to_string()),
-            Some("ok"),
-        );
+        )?;
 
         self.scanner.wait_for_discovery_completion().await?;
 
         self.controller.refresh().await?;
 
-        let msg = t!("notifications.bt.scan_completed");
-        self.log_sender.send(msg.to_string()).unwrap_or_default();
+        let _ = self.notification_manager.send_notification(
+            None,
+            Some(completed_msg.to_string()),
+            Some("ok"),
+            None,
+            Some(id),
+        );
+
+        self.log_sender
+            .send(completed_msg.to_string())
+            .unwrap_or_default();
 
         Ok(())
     }
@@ -463,6 +472,7 @@ impl App {
                 None,
                 Some(msg.to_string()),
                 Some("bluetooth"),
+                None,
                 None
             );
             return Ok(());
@@ -483,6 +493,7 @@ impl App {
                     None,
                     Some(msg.to_string()),
                     Some("bluetooth"),
+                    None,
                     None
                 );
                 Ok(())
@@ -508,6 +519,7 @@ impl App {
                     None,
                     Some(msg.to_string()),
                     Some("bluetooth"),
+                    None,
                     None
                 );
 
@@ -535,6 +547,7 @@ impl App {
             None,
             Some(msg.to_string()),
             Some("bluetooth"),
+            None,
             None
         );
 
@@ -575,6 +588,7 @@ impl App {
             None,
             Some(msg.to_string()),
             Some("bluetooth"),
+            None,
             None
         );
 
@@ -600,6 +614,7 @@ impl App {
             None,
             Some(msg.to_string()),
             Some("bluetooth"),
+            None,
             None
         );
 
@@ -622,6 +637,7 @@ impl App {
             None,
             Some(msg),
             Some("bluetooth"),
+            None,
             None
         );
 
