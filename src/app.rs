@@ -149,12 +149,39 @@ impl App {
                 self.perform_device_scan().await?;
             }
             MainMenuOptions::Settings => {
-                if let Some(option) = menu
-                    .show_settings_menu(menu_command, &self.controller, icon_type, spaces)
-                    .await?
-                {
-                    self.handle_settings_options(menu, menu_command, icon_type, spaces, option)
-                        .await?;
+                let mut stay_in_settings = true;
+                while stay_in_settings {
+                    if let Some(option) = menu
+                        .show_settings_menu(menu_command, &self.controller, icon_type, spaces)
+                        .await?
+                    {
+                        match option {
+                            SettingsMenuOptions::DisableAdapter => {
+                                self.handle_settings_options(
+                                    menu,
+                                    menu_command,
+                                    icon_type,
+                                    spaces,
+                                    option,
+                                )
+                                .await?;
+                                stay_in_settings = false;
+                            }
+                            _ => {
+                                self.handle_settings_options(
+                                    menu,
+                                    menu_command,
+                                    icon_type,
+                                    spaces,
+                                    option,
+                                )
+                                .await?;
+                                self.controller.refresh().await?;
+                            }
+                        }
+                    } else {
+                        stay_in_settings = false;
+                    }
                 }
             }
             MainMenuOptions::Device(output) => {
