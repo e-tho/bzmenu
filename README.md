@@ -8,7 +8,7 @@
 
 ## About
 
-`bzmenu` (**B**lue**Z** **Menu**) allows using your launcher of choice to manage Bluetooth.
+`bzmenu` (**B**lue**Z** **Menu**) manages Bluetooth through your launcher of choice.
 
 ## Dependencies
 
