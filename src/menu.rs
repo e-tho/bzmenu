@@ -1,27 +1,10 @@
 use crate::bz::{controller::Controller, device::Device};
 use crate::icons::Icons;
-use anyhow::{anyhow, Result};
-use clap::ArgEnum;
-use nix::sys::signal::{killpg, Signal};
-use nix::unistd::Pid;
-use process_wrap::std::{ProcessGroup, StdCommandWrap};
+use crate::launcher::{Launcher, LauncherType};
+use anyhow::Result;
 use rust_i18n::t;
-use shlex::Shlex;
-use signal_hook::iterator::Signals;
 use std::borrow::Cow;
-use std::io::Write;
-use std::process::{Command, Stdio};
 use std::sync::Arc;
-use std::thread;
-
-#[derive(Debug, Clone, ArgEnum)]
-pub enum MenuType {
-    Fuzzel,
-    Rofi,
-    Dmenu,
-    Walker,
-    Custom,
-}
 
 #[derive(Debug, Clone)]
 pub enum MainMenuOptions {
@@ -190,118 +173,34 @@ impl BluetoothMenuOptions {
 
 #[derive(Clone)]
 pub struct Menu {
-    pub menu_type: MenuType,
+    pub launcher_type: LauncherType,
     pub icons: Arc<Icons>,
 }
 
 impl Menu {
-    pub fn new(menu_type: MenuType, icons: Arc<Icons>) -> Self {
-        Self { menu_type, icons }
+    pub fn new(launcher_type: LauncherType, icons: Arc<Icons>) -> Self {
+        Self {
+            launcher_type,
+            icons,
+        }
     }
 
-    pub fn run_menu_command(
+    pub fn run_launcher(
         &self,
-        menu_command: &Option<String>,
+        launcher_command: &Option<String>,
         input: Option<&str>,
         icon_type: &str,
         prompt: Option<&str>,
     ) -> Result<Option<String>> {
-        let (prompt_text, placeholder_text) = if let Some(p) = prompt {
-            (format!("{}: ", p), p.to_string())
-        } else {
-            (String::new(), String::new())
-        };
+        let cmd = Launcher::create_command(
+            &self.launcher_type,
+            launcher_command,
+            icon_type,
+            prompt,
+            prompt,
+        )?;
 
-        let mut command = match self.menu_type {
-            MenuType::Fuzzel => {
-                let mut cmd = Command::new("fuzzel");
-                cmd.arg("-d");
-                if icon_type == "font" {
-                    cmd.arg("-I");
-                }
-                if !placeholder_text.is_empty() {
-                    cmd.arg("--placeholder").arg(&placeholder_text);
-                }
-                cmd
-            }
-            MenuType::Rofi => {
-                let mut cmd = Command::new("rofi");
-                cmd.arg("-m").arg("-1").arg("-dmenu");
-                if icon_type == "xdg" {
-                    cmd.arg("-show-icons");
-                }
-                if !placeholder_text.is_empty() {
-                    cmd.arg("-theme-str").arg(format!(
-                        "entry {{ placeholder: \"{}\"; }}",
-                        placeholder_text
-                    ));
-                }
-                cmd
-            }
-            MenuType::Dmenu => {
-                let mut cmd = Command::new("dmenu");
-                if !prompt_text.is_empty() {
-                    cmd.arg("-p").arg(&prompt_text);
-                }
-                cmd
-            }
-            MenuType::Walker => {
-                let mut cmd = Command::new("walker");
-                cmd.arg("-d").arg("-k");
-                if !placeholder_text.is_empty() {
-                    cmd.arg("-p").arg(&placeholder_text);
-                }
-                cmd
-            }
-            MenuType::Custom => {
-                if let Some(cmd_str) = menu_command {
-                    let mut cmd_processed = cmd_str.clone();
-                    cmd_processed = cmd_processed.replace("{prompt}", &prompt_text);
-                    cmd_processed = cmd_processed.replace("{placeholder}", &placeholder_text);
-
-                    let parts: Vec<String> = Shlex::new(&cmd_processed).collect();
-                    let (cmd_program, args) = parts
-                        .split_first()
-                        .ok_or_else(|| anyhow!("Failed to parse custom menu command"))?;
-
-                    let mut cmd = Command::new(cmd_program);
-                    cmd.args(args);
-                    cmd
-                } else {
-                    return Err(anyhow!("No custom menu command provided"));
-                }
-            }
-        };
-
-        command.stdin(Stdio::piped()).stdout(Stdio::piped());
-
-        let mut command_wrap = StdCommandWrap::from(command);
-        command_wrap.wrap(ProcessGroup::leader());
-
-        let mut child = command_wrap.spawn()?;
-
-        let pid = child.id() as i32;
-        thread::spawn(move || {
-            let mut signals = Signals::new([libc::SIGTERM, libc::SIGINT]).unwrap();
-            for _signal in signals.forever() {
-                let _ = killpg(Pid::from_raw(pid), Signal::SIGTERM);
-            }
-        });
-
-        if let Some(input_data) = input {
-            if let Some(stdin) = child.stdin().as_mut() {
-                stdin.write_all(input_data.as_bytes())?;
-            }
-        }
-
-        let output = child.wait_with_output()?;
-        let trimmed_output = String::from_utf8_lossy(&output.stdout).trim().to_string();
-
-        if trimmed_output.is_empty() {
-            Ok(None)
-        } else {
-            Ok(Some(trimmed_output))
-        }
+        Launcher::run(cmd, input)
     }
 
     pub fn clean_menu_output(&self, output: &str, icon_type: &str) -> String {
@@ -379,7 +278,7 @@ impl Menu {
 
     pub async fn show_main_menu(
         &self,
-        menu_command: &Option<String>,
+        launcher_command: &Option<String>,
         controller: &Controller,
         icon_type: &str,
         spaces: usize,
@@ -404,7 +303,7 @@ impl Menu {
         let settings_input = self.get_icon_text(options_end, icon_type, spaces);
         input.push_str(&format!("\n{}", settings_input));
 
-        let menu_output = self.run_menu_command(menu_command, Some(&input), icon_type, None)?;
+        let menu_output = self.run_launcher(launcher_command, Some(&input), icon_type, None)?;
 
         if let Some(output) = menu_output {
             let cleaned_output = self.clean_menu_output(&output, icon_type);
@@ -423,7 +322,7 @@ impl Menu {
 
     pub async fn show_device_options(
         &self,
-        menu_command: &Option<String>,
+        launcher_command: &Option<String>,
         icon_type: &str,
         spaces: usize,
         available_options: Vec<DeviceMenuOptions>,
@@ -448,7 +347,7 @@ impl Menu {
         let prompt = t!("menus.device.prompt", device_name = device_name);
 
         let menu_output =
-            self.run_menu_command(menu_command, Some(&input), icon_type, Some(&prompt))?;
+            self.run_launcher(launcher_command, Some(&input), icon_type, Some(&prompt))?;
 
         if let Some(output) = menu_output {
             let cleaned_output = self.clean_menu_output(&output, icon_type);
@@ -480,7 +379,7 @@ impl Menu {
 
     pub async fn show_settings_menu(
         &self,
-        menu_command: &Option<String>,
+        launcher_command: &Option<String>,
         controller: &Controller,
         icon_type: &str,
         spaces: usize,
@@ -519,7 +418,7 @@ impl Menu {
 
         let input = self.get_icon_text(options, icon_type, spaces);
 
-        let menu_output = self.run_menu_command(menu_command, Some(&input), icon_type, None)?;
+        let menu_output = self.run_launcher(launcher_command, Some(&input), icon_type, None)?;
 
         if let Some(output) = menu_output {
             let cleaned_output = self.clean_menu_output(&output, icon_type);
@@ -538,7 +437,7 @@ impl Menu {
 
     pub fn prompt_enable_adapter(
         &self,
-        menu_command: &Option<String>,
+        launcher_command: &Option<String>,
         icon_type: &str,
         spaces: usize,
     ) -> Option<AdapterMenuOptions> {
@@ -549,7 +448,7 @@ impl Menu {
 
         let input = self.get_icon_text(options, icon_type, spaces);
 
-        if let Ok(Some(output)) = self.run_menu_command(menu_command, Some(&input), icon_type, None)
+        if let Ok(Some(output)) = self.run_launcher(launcher_command, Some(&input), icon_type, None)
         {
             let cleaned_output = self.clean_menu_output(&output, icon_type);
             return AdapterMenuOptions::from_string(&cleaned_output);
@@ -560,7 +459,7 @@ impl Menu {
 
     pub fn prompt_passkey_confirmation(
         &self,
-        menu_command: &Option<String>,
+        launcher_command: &Option<String>,
         device_name: &str,
         passkey: &str,
         icon_type: &str,
@@ -579,7 +478,7 @@ impl Menu {
         let input = self.get_icon_text(options, icon_type, 1);
 
         let menu_output =
-            self.run_menu_command(menu_command, Some(&input), icon_type, Some(&prompt))?;
+            self.run_launcher(launcher_command, Some(&input), icon_type, Some(&prompt))?;
 
         if let Some(output) = menu_output {
             let cleaned_output = self.clean_menu_output(&output, icon_type);

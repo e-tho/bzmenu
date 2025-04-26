@@ -8,7 +8,7 @@
 
 ## About
 
-`bzmenu` (**B**lue**Z** **Menu**) allows using your menu of choice to manage Bluetooth.
+`bzmenu` (**B**lue**Z** **Menu**) allows using your launcher of choice to manage Bluetooth.
 
 ## Dependencies
 
@@ -76,20 +76,20 @@ Install the package:
 
 ## Usage
 
-### Supported menus
+### Supported launchers
 
-Specify an application using `-m` or `--menu` flag.
+Specify an application using `-l` or `--launcher` flag.
 
 ```shell
-bzmenu -m fuzzel
+bzmenu -l fuzzel
 ```
 
-### Custom menus
+### Custom launchers
 
-Specify `custom` as the menu and set your command using the `--menu-command` flag. Ensure your launcher supports `stdin` mode, and that it is properly configured in the command.
+Specify `custom` as the launcher and set your command using the `--launcher-command` flag. Ensure your launcher supports `stdin` mode, and that it is properly configured in the command.
 
 ```shell
-bzmenu -m custom --menu-command "my_custom_launcher --flag"
+bzmenu -l custom --launcher-command "my_custom_launcher --flag"
 ```
 
 #### Prompt and Placeholder support
@@ -97,7 +97,7 @@ bzmenu -m custom --menu-command "my_custom_launcher --flag"
 Use either `{prompt}` or `{placeholder}` as the value for the relevant flag in your command; each will be replaced with the appropriate text as needed. They return the same string, with `{prompt}` adding a colon at the end.
 
 ```shell
-bzmenu -m custom --menu-command "my_custom_launcher --prompt-flag '{prompt}'" # or --placeholder-flag '{placeholder}'
+bzmenu -l custom --launcher-command "my_custom_launcher --prompt-flag '{prompt}'" # or --placeholder-flag '{placeholder}'
 ```
 
 #### Example to enable all features
@@ -105,17 +105,17 @@ bzmenu -m custom --menu-command "my_custom_launcher --prompt-flag '{prompt}'" # 
 This example demonstrates enabling all available features in custom mode with `fuzzel`.
 
 ```shell
-bzmenu -m custom --menu-command "fuzzel -d -p '{prompt}'"
+bzmenu -l custom --launcher-command "fuzzel -d -p '{prompt}'"
 ```
 
 ### Available Options
 
-| Flag             | Description                                           | Supported Values                              | Default Value |
-| ---------------- | ----------------------------------------------------- | --------------------------------------------- | ------------- |
-| `-m`, `--menu`   | Specify the menu application to use.                  | `dmenu`, `rofi`, `fuzzel`, `walker`, `custom` | `dmenu`       |
-| `--menu-command` | Specify the command to use when `custom` menu is set. | Any valid shell command                       | `None`        |
-| `-i`, `--icon`   | Specify the icon type to use.                         | `font`, `xdg`                                 | `font`        |
-| `-s`, `--spaces` | Specify icon to text space count (font icons only).   | Any positive integer                          | `1`           |
+| Flag                 | Description                                               | Supported Values                              | Default Value |
+| -------------------- | --------------------------------------------------------- | --------------------------------------------- | ------------- |
+| `-l`, `--launcher`   | Specify the launcher to use.                              | `dmenu`, `rofi`, `fuzzel`, `walker`, `custom` | `dmenu`       |
+| `--launcher-command` | Specify the command to use when `custom` launcher is set. | Any valid shell command                       | `None`        |
+| `-i`, `--icon`       | Specify the icon type to use.                             | `font`, `xdg`                                 | `font`        |
+| `-s`, `--spaces`     | Specify icon to text space count (font icons only).       | Any positive integer                          | `1`           |
 
 ## License
 
