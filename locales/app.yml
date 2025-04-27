@@ -90,8 +90,8 @@ menus:
       en: "Bluetooth Pairing Request"
       fr: "Demande d'appairage Bluetooth"
     confirm_passkey:
-      en: "Confirm passkey %{passkey} for device %{device_name}?"
-      fr: "Confirmer le code %{passkey} pour l'appareil %{device_name}?"
+      en: "Confirm passkey: <b>%{passkey}</b>"
+      fr: "Confirmer le code : <b>%{passkey}</b>"
     confirm:
       en: "Confirm"
       fr: "Confirmer"
