@@ -454,7 +454,7 @@ impl App {
                 });
             },
             progress_msg.to_string(),
-            Some("scan"),
+            Some("scan_in_progress"),
         )?;
 
         self.scanner.wait_for_discovery_completion().await?;
