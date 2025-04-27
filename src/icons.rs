@@ -132,6 +132,10 @@ impl Icons {
             ),
         );
         xdg_icons.insert(
+            "scan_in_progress",
+            IconDefinition::simple("bluetooth-acquiring-symbolic"),
+        );
+        xdg_icons.insert(
             "settings",
             IconDefinition::simple("preferences-system-symbolic"),
         );
