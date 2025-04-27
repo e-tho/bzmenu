@@ -149,40 +149,8 @@ impl App {
                 self.perform_device_scan().await?;
             }
             MainMenuOptions::Settings => {
-                let mut stay_in_settings = true;
-                while stay_in_settings {
-                    if let Some(option) = menu
-                        .show_settings_menu(menu_command, &self.controller, icon_type, spaces)
-                        .await?
-                    {
-                        match option {
-                            SettingsMenuOptions::DisableAdapter => {
-                                self.handle_settings_options(
-                                    menu,
-                                    menu_command,
-                                    icon_type,
-                                    spaces,
-                                    option,
-                                )
-                                .await?;
-                                stay_in_settings = false;
-                            }
-                            _ => {
-                                self.handle_settings_options(
-                                    menu,
-                                    menu_command,
-                                    icon_type,
-                                    spaces,
-                                    option,
-                                )
-                                .await?;
-                                self.controller.refresh().await?;
-                            }
-                        }
-                    } else {
-                        stay_in_settings = false;
-                    }
-                }
+                self.handle_settings_menu(menu, menu_command, icon_type, spaces)
+                    .await?;
             }
             MainMenuOptions::Device(output) => {
                 if let Some(device) = self
@@ -194,6 +162,39 @@ impl App {
             }
         }
         Ok(None)
+    }
+
+    async fn handle_settings_menu(
+        &mut self,
+        menu: &Menu,
+        menu_command: &Option<String>,
+        icon_type: &str,
+        spaces: usize,
+    ) -> Result<()> {
+        let mut stay_in_settings = true;
+
+        while stay_in_settings {
+            self.controller.refresh().await?;
+
+            if let Some(option) = menu
+                .show_settings_menu(menu_command, &self.controller, icon_type, spaces)
+                .await?
+            {
+                if matches!(option, SettingsMenuOptions::DisableAdapter) {
+                    self.handle_settings_options(menu, menu_command, icon_type, spaces, option)
+                        .await?;
+                    stay_in_settings = false;
+                } else {
+                    self.handle_settings_options(menu, menu_command, icon_type, spaces, option)
+                        .await?;
+                }
+            } else {
+                stay_in_settings = false;
+                try_send_log!(self.log_sender, "Exited settings menu".to_string());
+            }
+        }
+
+        Ok(())
     }
 
     async fn handle_settings_options(
