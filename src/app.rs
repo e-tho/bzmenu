@@ -291,6 +291,89 @@ impl App {
         Ok(())
     }
 
+    async fn handle_device_menu(
+        &mut self,
+        menu: &Menu,
+        menu_command: &Option<String>,
+        device: &crate::bz::device::Device,
+        icon_type: &str,
+        spaces: usize,
+    ) -> Result<()> {
+        let mut device_clone = device.clone();
+        let mut stay_in_device_menu = true;
+
+        while stay_in_device_menu {
+            if let Ok(refreshed_device) =
+                crate::bz::device::Device::new(&self.controller.adapter, &device_clone.addr).await
+            {
+                device_clone = refreshed_device;
+            } else {
+                try_send_log!(
+                    self.log_sender,
+                    format!("Device {} is no longer available", device_clone.alias)
+                );
+                break;
+            }
+
+            let available_options = if device_clone.is_paired {
+                menu.get_paired_device_options(&device_clone)
+            } else {
+                vec![DeviceMenuOptions::Connect]
+            };
+
+            match menu
+                .show_device_options(
+                    menu_command,
+                    icon_type,
+                    spaces,
+                    available_options,
+                    &device_clone.alias,
+                )
+                .await?
+            {
+                Some(option) => {
+                    match option {
+                        DeviceMenuOptions::Connect => {
+                            if !device_clone.is_connected {
+                                self.perform_device_connection(&device_clone).await?;
+                            }
+                        }
+                        DeviceMenuOptions::Disconnect => {
+                            if device_clone.is_connected {
+                                self.perform_device_disconnection(&device_clone).await?;
+                            }
+                        }
+                        DeviceMenuOptions::Trust => {
+                            if !device_clone.is_trusted {
+                                self.perform_trust_device(&device_clone, true).await?;
+                            }
+                        }
+                        DeviceMenuOptions::RevokeTrust => {
+                            if device_clone.is_trusted {
+                                self.perform_trust_device(&device_clone, false).await?;
+                            }
+                        }
+                        DeviceMenuOptions::Forget => {
+                            self.perform_forget_device(&device_clone).await?;
+                            stay_in_device_menu = false;
+                        }
+                    }
+
+                    self.controller.refresh().await?;
+                }
+                None => {
+                    stay_in_device_menu = false;
+                    try_send_log!(
+                        self.log_sender,
+                        format!("Exited device menu for {}", device_clone.alias)
+                    );
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     async fn handle_device_selection(
         &mut self,
         menu: &Menu,
@@ -321,95 +404,13 @@ impl App {
             })
             .cloned();
 
-        if let Some(device) = paired_device_clone {
-            self.handle_paired_device_options(menu, menu_command, &device, icon_type, spaces)
-                .await?;
-            return Ok(Some(device));
-        } else if let Some(device) = new_device_clone {
-            self.handle_new_device_options(menu, menu_command, &device, icon_type, spaces)
+        if let Some(device) = paired_device_clone.or(new_device_clone) {
+            self.handle_device_menu(menu, menu_command, &device, icon_type, spaces)
                 .await?;
             return Ok(Some(device));
         }
 
         Ok(None)
-    }
-
-    async fn handle_paired_device_options(
-        &mut self,
-        menu: &Menu,
-        menu_command: &Option<String>,
-        device: &crate::bz::device::Device,
-        icon_type: &str,
-        spaces: usize,
-    ) -> Result<()> {
-        let available_options = menu.get_paired_device_options(device);
-
-        if let Some(option) = menu
-            .show_device_options(
-                menu_command,
-                icon_type,
-                spaces,
-                available_options,
-                &device.alias,
-            )
-            .await?
-        {
-            match option {
-                DeviceMenuOptions::Connect => {
-                    if !device.is_connected {
-                        self.perform_device_connection(device).await?;
-                    }
-                }
-                DeviceMenuOptions::Disconnect => {
-                    if device.is_connected {
-                        self.perform_device_disconnection(device).await?;
-                    }
-                }
-                DeviceMenuOptions::Trust => {
-                    if !device.is_trusted {
-                        self.perform_trust_device(device, true).await?;
-                    }
-                }
-                DeviceMenuOptions::RevokeTrust => {
-                    if device.is_trusted {
-                        self.perform_trust_device(device, false).await?;
-                    }
-                }
-                DeviceMenuOptions::Forget => {
-                    self.perform_forget_device(device).await?;
-                }
-            }
-        }
-
-        self.controller.refresh().await?;
-        Ok(())
-    }
-
-    async fn handle_new_device_options(
-        &mut self,
-        menu: &Menu,
-        menu_command: &Option<String>,
-        device: &crate::bz::device::Device,
-        icon_type: &str,
-        spaces: usize,
-    ) -> Result<()> {
-        let available_options = vec![DeviceMenuOptions::Connect];
-
-        if let Some(DeviceMenuOptions::Connect) = menu
-            .show_device_options(
-                menu_command,
-                icon_type,
-                spaces,
-                available_options,
-                &device.alias,
-            )
-            .await?
-        {
-            self.perform_device_connection(device).await?;
-        }
-
-        self.controller.refresh().await?;
-        Ok(())
     }
 
     async fn perform_device_scan(&mut self) -> Result<()> {
