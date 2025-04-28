@@ -26,6 +26,7 @@ pub struct App {
     pairing_manager: PairingManager,
     log_sender: UnboundedSender<String>,
     notification_manager: Arc<NotificationManager>,
+    scan_duration: u64,
 }
 
 impl App {
@@ -41,6 +42,7 @@ impl App {
         _menu: Menu,
         log_sender: UnboundedSender<String>,
         icons: Arc<Icons>,
+        scan_duration: u64,
     ) -> Result<Self> {
         let session = Arc::new(Session::new().await?);
         let notification_manager = Arc::new(NotificationManager::new(icons.clone()));
@@ -82,6 +84,7 @@ impl App {
             pairing_manager,
             log_sender,
             notification_manager,
+            scan_duration,
         })
     }
 
@@ -429,9 +432,9 @@ impl App {
             return Ok(());
         }
 
-        const SCAN_DURATION: u64 = 10;
+        let scan_duration = self.scan_duration;
 
-        self.scanner.start_discovery(SCAN_DURATION).await?;
+        self.scanner.start_discovery(scan_duration).await?;
 
         let scanner_clone = self.scanner.clone();
         let log_sender_clone = self.log_sender.clone();
@@ -440,7 +443,7 @@ impl App {
         let completed_msg = t!("notifications.bt.scan_completed");
 
         let id = self.notification_manager.send_progress_notification(
-            SCAN_DURATION,
+            scan_duration,
             move || {
                 try_send_log!(
                     log_sender_clone,
