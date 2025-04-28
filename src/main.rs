@@ -70,6 +70,13 @@ async fn main() -> Result<()> {
                 .default_value("1")
                 .help("Number of spaces between icon and text when using font icons"),
         )
+        .arg(
+            Arg::new("scan_duration")
+                .long("scan-duration")
+                .takes_value(true)
+                .default_value("10")
+                .help("Duration of Bluetooth device discovery in seconds"),
+        )
         .get_matches();
 
     let launcher_type: LauncherType = if matches.contains_id("launcher") {
@@ -104,6 +111,11 @@ async fn main() -> Result<()> {
         .and_then(|s| s.parse::<usize>().ok())
         .ok_or_else(|| anyhow!("Invalid value for --spaces. Must be a positive integer."))?;
 
+    let scan_duration = matches
+        .get_one::<String>("scan_duration")
+        .and_then(|s| s.parse::<u64>().ok())
+        .unwrap_or(10);
+
     let (log_sender, mut log_receiver) = unbounded_channel::<String>();
     tokio::spawn(async move {
         while let Some(log) = log_receiver.recv().await {
@@ -111,7 +123,16 @@ async fn main() -> Result<()> {
         }
     });
 
-    run_app_loop(&menu, &command_str, &icon_type, spaces, log_sender, icons).await?;
+    run_app_loop(
+        &menu,
+        &command_str,
+        &icon_type,
+        spaces,
+        log_sender,
+        icons,
+        scan_duration,
+    )
+    .await?;
     Ok(())
 }
 
@@ -122,8 +143,15 @@ async fn run_app_loop(
     spaces: usize,
     log_sender: tokio::sync::mpsc::UnboundedSender<String>,
     icons: Arc<Icons>,
+    scan_duration: u64,
 ) -> Result<()> {
-    let mut app = App::new(menu.clone(), log_sender.clone(), icons.clone()).await?;
+    let mut app = App::new(
+        menu.clone(),
+        log_sender.clone(),
+        icons.clone(),
+        scan_duration,
+    )
+    .await?;
 
     loop {
         match app.run(menu, command_str, icon_type, spaces).await {
@@ -141,7 +169,14 @@ async fn run_app_loop(
         }
 
         if app.reset_mode {
-            app = App::new(menu.clone(), log_sender.clone(), icons.clone()).await?;
+            app = App::new(
+                menu.clone(),
+                log_sender.clone(),
+                icons.clone(),
+                scan_duration,
+            )
+            .await?;
+
             app.reset_mode = false;
         }
     }
