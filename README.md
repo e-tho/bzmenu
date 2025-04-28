@@ -75,6 +75,14 @@ Install the package:
 }
 ```
 
+### Arch Linux
+
+Install the package with your favorite AUR helper:
+
+```shell
+paru -S bzmenu-git
+```
+
 ## Usage
 
 ### Supported launchers
