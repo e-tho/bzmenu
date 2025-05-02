@@ -94,7 +94,7 @@ menus:
         name:
           en: "Make Hidden"
           fr: "Rendre invisible"
-          de: "Nicht mehr entdeckbar machen"
+          de: "Versteckt machen"
       enable_pairable:
         name:
           en: "Enable Pairing"
@@ -127,7 +127,7 @@ notifications:
     scan_already_in_progress:
       en: "Bluetooth scan already in progress"
       fr: "Recherche Bluetooth déjà en cours"
-      de: "Bluetooth-Scan ist bereits eingeschaltet"
+      de: "Bluetooth-Scan läuft bereits"
     scan_in_progress:
       en: "Searching for Bluetooth devices. Click to stop."
       fr: "Recherche d'appareils Bluetooth en cours. Cliquez pour arrêter."
@@ -151,19 +151,19 @@ notifications:
     device_paired:
       en: "Device paired: %{device_name}"
       fr: "Appareil appairé: %{device_name}"
-      de: "Mit Gerät %{device_name} gekoppelt"
+      de: "Mit Gerät gekoppelt: %{device_name}"
     device_trusted:
       en: "Device trusted: %{device_name}"
       fr: "Appareil approuvé: %{device_name}"
-      de: "Gerät %{device_name} wird vertraut"
+      de: "Gerät wird vertraut: %{device_name}"
     device_untrusted:
       en: "Device untrusted: %{device_name}"
       fr: "Appareil non approuvé: %{device_name}"
-      de: "Gerät %{device_name} wird nicht vertraut"
+      de: "Gerät wird nicht vertraut: %{device_name}"
     device_forgotten:
       en: "Device removed: %{device_name}"
       fr: "Appareil supprimé: %{device_name}"
-      de: "Gerät %{device_name} entfernt"
+      de: "Gerät entfernt: %{device_name}"
     adapter_powered_off:
       en: "Bluetooth is disabled"
       fr: "Bluetooth est désactivé"
@@ -171,7 +171,7 @@ notifications:
     adapter_enabled:
       en: "Bluetooth enabled"
       fr: "Bluetooth activé"
-      de: "Bluetooth ist aktiviert"
+      de: "Bluetooth aktiviert"
     adapter_disabled:
       en: "Bluetooth disabled"
       fr: "Bluetooth désactivé"
@@ -183,7 +183,7 @@ notifications:
     discoverable_disabled:
       en: "Your device is now hidden"
       fr: "Votre appareil est maintenant invisible"
-      de: "Bluetooth ist jetzt versteckt"
+      de: "Das Gerät ist jetzt versteckt"
     pairable_enabled:
       en: "Pairing enabled"
       fr: "Appairage activé"
@@ -199,7 +199,7 @@ notifications:
     pairing_failed:
       en: "Failed to pair with %{device_name}: %{error}"
       fr: "Échec de l'appairage avec %{device_name} : %{error}"
-      de: "Konnte nicht mit Gerät %{device_name} koppeln: %{error}"
+      de: "Konnte nicht koppeln mit Gerät %{device_name}: %{error}"
     device_out_of_range:
       en: "Device '%{device_name}' is not available or out of range"
       fr: "L'appareil '%{device_name}' n'est pas disponible ou hors de portée"
@@ -207,4 +207,4 @@ notifications:
     connection_failed:
       en: "Connection to '%{device_name}' failed: %{error}"
       fr: "Échec de la connexion à '%{device_name}' : %{error}"
-      de: "Konnte nicht mit Gerät %{device_name} verbinden: %{error}"
+      de: "Konnte nicht verbinden mit Gerät %{device_name}: %{error}"
