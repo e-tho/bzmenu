@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use bzmenu::{app::App, icons::Icons, launcher::LauncherType, menu::Menu};
 use clap::{builder::EnumValueParser, Arg, Command};
-use rust_i18n::{i18n, set_locale, available_locales};
+use rust_i18n::{available_locales, i18n, set_locale};
 use std::{env, sync::Arc};
 use sys_locale::get_locale;
 use tokio::sync::mpsc::unbounded_channel;
@@ -14,7 +14,7 @@ async fn main() -> Result<()> {
         eprintln!("Locale not detected, defaulting to 'en-US'.");
         String::from("en-US")
     });
-    if available_locales!().iter().find(|&&x| x == &locale).is_some() {
+    if available_locales!().iter().any(|&x| x == locale) {
         set_locale(&locale);
     } else {
         set_locale("en");
