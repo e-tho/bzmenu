@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use bzmenu::{app::App, icons::Icons, launcher::LauncherType, menu::Menu};
 use clap::{builder::EnumValueParser, Arg, Command};
-use rust_i18n::{i18n, set_locale};
+use rust_i18n::{i18n, set_locale, available_locales};
 use std::{env, sync::Arc};
 use sys_locale::get_locale;
 use tokio::sync::mpsc::unbounded_channel;
@@ -14,7 +14,11 @@ async fn main() -> Result<()> {
         eprintln!("Locale not detected, defaulting to 'en-US'.");
         String::from("en-US")
     });
-    set_locale(&locale);
+    if available_locales!().iter().find(|&&x| x == &locale).is_some() {
+        set_locale(&locale);
+    } else {
+        set_locale("en");
+    }
 
     let matches = Command::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
