@@ -121,7 +121,7 @@ bzmenu -l custom --launcher-command "fuzzel -d -p '{prompt}'"
 
 | Flag                 | Description                                               | Supported Values                              | Default Value |
 | -------------------- | --------------------------------------------------------- | --------------------------------------------- | ------------- |
-| `-l`, `--launcher`   | Specify the launcher to use.                              | `dmenu`, `rofi`, `fuzzel`, `walker`, `custom` | `dmenu`       |
+| `-l`, `--launcher`   | Specify the launcher to use (**required**).               | `dmenu`, `rofi`, `fuzzel`, `walker`, `custom` | `None`        |
 | `--launcher-command` | Specify the command to use when `custom` launcher is set. | Any valid shell command                       | `None`        |
 | `-i`, `--icon`       | Specify the icon type to use.                             | `font`, `xdg`                                 | `font`        |
 | `-s`, `--spaces`     | Specify icon to text space count (font icons only).       | Any positive integer                          | `1`           |
