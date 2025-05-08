@@ -87,11 +87,7 @@ Install the package:
 Install the package with your favorite AUR helper:
 
 ```shell
-paru -S bzmenu
-```
-or
-```shell
-paru -S bzmenu-git
+paru -S bzmenu # or bzmenu-git
 ```
 
 ## Usage
