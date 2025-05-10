@@ -134,6 +134,10 @@ bzmenu -l custom --launcher-command "fuzzel -d -p '{prompt}'"
 | `-s`, `--spaces`     | Specify icon to text space count (font icons only).       | Any positive integer                          | `1`           |
 | `--scan-duration`    | Specify the duration of device discovery in seconds.      | Any positive integer                          | `10`          |
 
+## Contributing
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
+
 ## License
 
 GPLv3
