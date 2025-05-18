@@ -45,6 +45,7 @@
 | [Fuzzel](https://codeberg.org/dnkl/fuzzel)    |     ✅     |    ✅     | XDG icons supported in main branch                                                    |
 | [Rofi](https://github.com/davatorium/rofi)    |     ✅     |    🔄     | XDG icon support pending via [PR #2122](https://github.com/davatorium/rofi/pull/2122) |
 | [Walker](https://github.com/abenz1267/walker) |     ✅     |    ✅     | XDG icons supported since v0.12.21                                                    |
+| [Wofi](https://hg.sr.ht/~scoopta/wofi)        |     ✅     |    ✅     | Only support in main branch                                                   |
 | [dmenu](https://tools.suckless.org/dmenu)     |     ✅     |    ❌     | No XDG icon support                                                                   |
 | Custom (stdin)                                |     ✅     |    ❔     | Depends on launcher implementation                                                    |
 
@@ -126,13 +127,13 @@ bzmenu -l custom --launcher-command "fuzzel -d -p '{prompt}'"
 
 ### Available Options
 
-| Flag                 | Description                                               | Supported Values                              | Default Value |
-| -------------------- | --------------------------------------------------------- | --------------------------------------------- | ------------- |
-| `-l`, `--launcher`   | Specify the launcher to use (**required**).               | `dmenu`, `rofi`, `fuzzel`, `walker`, `custom` | `None`        |
-| `--launcher-command` | Specify the command to use when `custom` launcher is set. | Any valid shell command                       | `None`        |
-| `-i`, `--icon`       | Specify the icon type to use.                             | `font`, `xdg`                                 | `font`        |
-| `-s`, `--spaces`     | Specify icon to text space count (font icons only).       | Any positive integer                          | `1`           |
-| `--scan-duration`    | Specify the duration of device discovery in seconds.      | Any positive integer                          | `10`          |
+| Flag                 | Description                                               | Supported Values                                      | Default Value |
+| -------------------- | --------------------------------------------------------- | --------------------------------------------- --------| ------------- |
+| `-l`, `--launcher`   | Specify the launcher to use (**required**).               | `dmenu`, `rofi`, `fuzzel`, `walker`, `wofi`, `custom` | `None`        |
+| `--launcher-command` | Specify the command to use when `custom` launcher is set. | Any valid shell command                               | `None`        |
+| `-i`, `--icon`       | Specify the icon type to use.                             | `font`, `xdg`                                         | `font`        |
+| `-s`, `--spaces`     | Specify icon to text space count (font icons only).       | Any positive integer                                  | `1`           |
+| `--scan-duration`    | Specify the duration of device discovery in seconds.      | Any positive integer                                  | `10`          |
 
 ## Contributing
 

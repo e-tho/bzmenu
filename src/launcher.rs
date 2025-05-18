@@ -15,6 +15,7 @@ pub enum LauncherType {
     Rofi,
     Dmenu,
     Walker,
+    Wofi,
     Custom,
 }
 
@@ -32,6 +33,9 @@ pub enum LauncherCommand {
         prompt: Option<String>,
     },
     Walker {
+        placeholder: Option<String>,
+    },
+    Wofi {
         placeholder: Option<String>,
     },
     Custom {
@@ -86,6 +90,14 @@ impl Launcher {
             LauncherCommand::Walker { placeholder } => {
                 let mut cmd = Command::new("walker");
                 cmd.arg("-d").arg("-k");
+                if let Some(placeholder_text) = placeholder {
+                    cmd.arg("-p").arg(placeholder_text);
+                }
+                cmd
+            }
+            LauncherCommand::Wofi { placeholder } => {
+                let mut cmd = Command::new("wofi");
+                cmd.arg("--dmenu");
                 if let Some(placeholder_text) = placeholder {
                     cmd.arg("-p").arg(placeholder_text);
                 }
@@ -172,6 +184,9 @@ impl Launcher {
                 prompt: prompt_text,
             }),
             LauncherType::Walker => Ok(LauncherCommand::Walker {
+                placeholder: placeholder_text,
+            }),
+            LauncherType::Wofi => Ok(LauncherCommand::Wofi {
                 placeholder: placeholder_text,
             }),
             LauncherType::Custom => {
