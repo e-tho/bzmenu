@@ -326,7 +326,7 @@ dependencies = [
  "bluer",
  "chrono",
  "clap",
- "futures",
+ "futures-util",
  "libc",
  "nix",
  "notify-rust",

@@ -2,7 +2,7 @@ use crate::bz::pairing::PairingConfirmationHandler;
 use anyhow::Result;
 use bluer::agent::{Agent, AgentHandle, ReqError};
 use bluer::Session;
-use futures::FutureExt;
+use futures_util::FutureExt;
 use std::{
     sync::{
         atomic::{AtomicBool, Ordering},
