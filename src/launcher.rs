@@ -81,17 +81,15 @@ impl Launcher {
                     cmd.arg("-show-icons");
                 }
                 if let Some(placeholder_text) = placeholder {
-                    cmd.arg("-theme-str").arg(format!(
-                        "entry {{ placeholder: \"{}\"; }}",
-                        placeholder_text
-                    ));
+                    cmd.arg("-theme-str")
+                        .arg(format!("entry {{ placeholder: \"{placeholder_text}\"; }}"));
                 }
                 cmd
             }
             LauncherCommand::Dmenu { prompt } => {
                 let mut cmd = Command::new("dmenu");
                 if let Some(prompt_text) = prompt {
-                    cmd.arg("-p").arg(format!("{}: ", prompt_text));
+                    cmd.arg("-p").arg(format!("{prompt_text}: "));
                 }
                 cmd
             }
@@ -107,7 +105,7 @@ impl Launcher {
                 let mut cmd_str = command;
 
                 for (key, value) in args {
-                    cmd_str = cmd_str.replace(&format!("{{{}}}", key), &value);
+                    cmd_str = cmd_str.replace(&format!("{{{key}}}"), &value);
                 }
 
                 cmd_str = cmd_str.replace("{placeholder}", "");
