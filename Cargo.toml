@@ -13,10 +13,12 @@ repository = "https://github.com/e-tho/bzmenu"
 bluer = { version = "0.17", features = ["bluetoothd"] }
 anyhow = "1.0"
 tokio = { version = "1", features = ["full"] }
-futures-util = { version = "0.3", default-features = false, features = ["alloc"] }
+futures-util = { version = "0.3", default-features = false, features = [
+    "alloc",
+] }
 clap = { version = "3", features = ["derive"] }
 chrono = "0.4"
-nix = "0.29"
+nix = { version = "0.29", features = ["process", "signal"] }
 libc = "0.2"
 process-wrap = { version = "8.2", features = ["std"] }
 signal-hook = "0.3"
