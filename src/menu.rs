@@ -236,7 +236,7 @@ impl Menu {
                 let text = text.as_ref();
                 match icon_type {
                     "font" => format!("{}{}{}", icon, " ".repeat(spaces), text),
-                    "xdg" => format!("{}\0icon\x1f{}", text, icon),
+                    "xdg" => format!("{text}\0icon\x1f{icon}"),
                     _ => text.to_string(),
                 }
             })
@@ -252,10 +252,10 @@ impl Menu {
         if let Some(battery) = device.battery_percentage {
             if icon_type == "font" {
                 if let Some(battery_icon) = self.icons.get_battery_icon(battery, icon_type) {
-                    status_indicators.push_str(&format!(" [{}]", battery_icon));
+                    status_indicators.push_str(&format!(" [{battery_icon}]"));
                 }
             } else if icon_type == "xdg" {
-                status_indicators.push_str(&format!(" [{}%]", battery));
+                status_indicators.push_str(&format!(" [{battery}%]"));
             }
         }
 
@@ -291,17 +291,17 @@ impl Menu {
 
         for device in &controller.paired_devices {
             let device_display = self.format_device_display(device, icon_type, spaces);
-            input.push_str(&format!("\n{}", device_display));
+            input.push_str(&format!("\n{device_display}"));
         }
 
         for device in &controller.new_devices {
             let device_display = self.format_device_display(device, icon_type, spaces);
-            input.push_str(&format!("\n{}", device_display));
+            input.push_str(&format!("\n{device_display}"));
         }
 
         let options_end = vec![("settings", settings_text.as_ref())];
         let settings_input = self.get_icon_text(options_end, icon_type, spaces);
-        input.push_str(&format!("\n{}", settings_input));
+        input.push_str(&format!("\n{settings_input}"));
 
         let menu_output = self.run_launcher(launcher_command, Some(&input), icon_type, None)?;
 
@@ -341,7 +341,7 @@ impl Menu {
 
             let option_text =
                 self.get_icon_text(vec![(icon_key, option.to_str())], icon_type, spaces);
-            input.push_str(&format!("{}\n", option_text));
+            input.push_str(&format!("{option_text}\n"));
         }
 
         let prompt = t!("menus.device.prompt", device_name = device_name);
