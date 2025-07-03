@@ -38,10 +38,7 @@ impl Scanner {
 
         try_send_log!(
             self.log_sender,
-            format!(
-                "Starting Bluetooth discovery for {} seconds...",
-                timeout_sec
-            )
+            format!("Starting Bluetooth discovery for {timeout_sec} seconds...")
         );
 
         let discovery_stream = self.adapter.discover_devices().await?;
@@ -56,7 +53,7 @@ impl Scanner {
             is_scanning.store(false, Ordering::Relaxed);
             try_send_log!(
                 log_sender,
-                format!("Discovery completed after {} seconds", timeout_sec)
+                format!("Discovery completed after {timeout_sec} seconds")
             );
 
             drop(discovery_stream);

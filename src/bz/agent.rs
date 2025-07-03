@@ -55,10 +55,7 @@ impl AgentManager {
 
                         try_send_log!(
                             log_sender,
-                            format!(
-                                "Confirm passkey {} for device {}? (yes/no)",
-                                passkey_str, device_address
-                            )
+                            format!("Confirm passkey {passkey_str} for device {device_address}? (yes/no)")
                         );
 
                         let (tx, mut rx) = tokio::sync::mpsc::channel::<bool>(1);
@@ -75,10 +72,7 @@ impl AgentManager {
                                 move || {
                                     try_send_log!(
                                         log_sender,
-                                        format!(
-                                            "User confirmed pairing for device {}",
-                                            device_addr
-                                        )
+                                        format!("User confirmed pairing for device {device_addr}")
                                     );
                                     let _ = tx.blocking_send(true);
                                 }
@@ -90,7 +84,7 @@ impl AgentManager {
                                 move || {
                                     try_send_log!(
                                         log_sender,
-                                        format!("User rejected pairing for device {}", device_addr)
+                                        format!("User rejected pairing for device {device_addr}")
                                     );
                                     let _ = tx.blocking_send(false);
                                 }
