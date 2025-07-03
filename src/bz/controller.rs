@@ -37,7 +37,7 @@ impl Controller {
 
         let (paired_devices, new_devices) = Self::get_devices(&adapter_arc).await?;
 
-        try_send_log!(sender, format!("Bluetooth adapter {} initialized", name));
+        try_send_log!(sender, format!("Bluetooth adapter {name} initialized"));
 
         Ok(Self {
             adapter: adapter_arc,
