@@ -13,7 +13,7 @@ repository = "https://github.com/e-tho/bzmenu"
 bluer = { version = "0.17", features = ["bluetoothd"] }
 anyhow = "1.0"
 tokio = { version = "1", features = ["full"] }
-futures = "0.3"
+futures-util = { version = "0.3", default-features = false, features = ["alloc"] }
 clap = { version = "3", features = ["derive"] }
 chrono = "0.4"
 nix = "0.29"
