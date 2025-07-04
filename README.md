@@ -31,12 +31,12 @@
 - [`bluetoothd`](http://www.bluez.org) – BlueZ daemon
 - [`dbus`](https://www.freedesktop.org/wiki/Software/dbus) – For communicating with `bluetoothd`
 - A launcher with `stdin` mode support
+- [Notification daemon](https://specifications.freedesktop.org/notification-spec/latest) – For pairing confirmations and other system notifications (e.g. `dunst`, `fnott`, included with DEs or can be installed manually)
 
 #### Optional
 
 - [NerdFonts](https://www.nerdfonts.com) – For font-based icons (default mode)
 - [XDG icon theme](https://specifications.freedesktop.org/icon-theme-spec/latest) – For image-based icons (used with `-i xdg`, included with DEs or can be installed manually)
-- [Notification daemon](https://specifications.freedesktop.org/notification-spec/latest) – For system notifications (e.g. `dunst`, `fnott`, included with DEs or can be installed manually)
 
 ## Compatibility
 
