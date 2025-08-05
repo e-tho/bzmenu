@@ -6,7 +6,6 @@ use nix::{
     unistd::Pid,
 };
 use process_wrap::std::{ProcessGroup, StdCommandWrap};
-use shlex::Shlex;
 use signal_hook::iterator::Signals;
 use std::{
     io::Write,
@@ -44,8 +43,8 @@ pub enum LauncherCommand {
         placeholder: Option<String>,
     },
     Custom {
-        command: String,
-        args: Vec<(String, String)>,
+        program: String,
+        args: Vec<String>,
     },
 }
 
@@ -66,8 +65,8 @@ impl Launcher {
                 if icon_type == "font" {
                     cmd.arg("-I");
                 }
-                if let Some(placeholder_text) = placeholder {
-                    cmd.arg("--placeholder").arg(placeholder_text);
+                if let Some(hint_text) = placeholder {
+                    cmd.arg("--placeholder").arg(hint_text);
                 }
                 cmd
             }
@@ -80,49 +79,69 @@ impl Launcher {
                 if icon_type == "xdg" {
                     cmd.arg("-show-icons");
                 }
-                if let Some(placeholder_text) = placeholder {
+                if let Some(hint_text) = placeholder {
                     cmd.arg("-theme-str")
-                        .arg(format!("entry {{ placeholder: \"{placeholder_text}\"; }}"));
+                        .arg(format!("entry {{ placeholder: \"{hint_text}\"; }}"));
                 }
                 cmd
             }
             LauncherCommand::Dmenu { prompt } => {
                 let mut cmd = Command::new("dmenu");
-                if let Some(prompt_text) = prompt {
-                    cmd.arg("-p").arg(format!("{prompt_text}: "));
+                if let Some(hint_text) = prompt {
+                    cmd.arg("-p").arg(format!("{hint_text}: "));
                 }
                 cmd
             }
             LauncherCommand::Walker { placeholder } => {
                 let mut cmd = Command::new("walker");
                 cmd.arg("-d").arg("-k");
-                if let Some(placeholder_text) = placeholder {
-                    cmd.arg("-p").arg(placeholder_text);
+                if let Some(hint_text) = placeholder {
+                    cmd.arg("-p").arg(hint_text);
                 }
                 cmd
             }
-            LauncherCommand::Custom { command, args } => {
-                let mut cmd_str = command;
-
-                for (key, value) in args {
-                    cmd_str = cmd_str.replace(&format!("{{{key}}}"), &value);
-                }
-
-                cmd_str = cmd_str.replace("{placeholder}", "");
-                cmd_str = cmd_str.replace("{prompt}", "");
-
-                let parts: Vec<String> = Shlex::new(&cmd_str).collect();
-                let (cmd_program, args) = parts
-                    .split_first()
-                    .ok_or_else(|| anyhow!("Failed to parse custom launcher command"))?;
-
-                let mut cmd = Command::new(cmd_program);
-                cmd.args(args);
+            LauncherCommand::Custom { program, args } => {
+                let mut cmd = Command::new(&program);
+                cmd.args(&args);
                 cmd
             }
         };
 
         Self::run_command(command, input)
+    }
+
+    fn substitute_placeholders(template: &str, hint: Option<&str>) -> Result<String> {
+        if !template.contains('{') {
+            return Ok(template.to_string());
+        }
+
+        let mut result = template.to_string();
+
+        if let Some(h) = hint {
+            result = result.replace("{hint}", h);
+            result = result.replace("{placeholder}", h);
+            result = result.replace("{prompt}", &format!("{h}: "));
+        } else {
+            result = result.replace("{hint}", "");
+            result = result.replace("{placeholder}", "");
+            result = result.replace("{prompt}", "");
+        }
+
+        Ok(result)
+    }
+
+    fn parse_command(command_str: &str) -> Result<(String, Vec<String>)> {
+        let parts =
+            shlex::split(command_str).ok_or_else(|| anyhow!("Invalid shell syntax in command"))?;
+
+        if parts.is_empty() {
+            return Err(anyhow!("Empty command string"));
+        }
+
+        let program = parts[0].clone();
+        let args = parts[1..].to_vec();
+
+        Ok((program, args))
     }
 
     fn run_command(mut command: Command, input: Option<&str>) -> Result<Option<String>> {
@@ -174,43 +193,29 @@ impl Launcher {
         launcher_type: &LauncherType,
         command_str: &Option<String>,
         icon_type: &str,
-        prompt: Option<&str>,
-        placeholder: Option<&str>,
+        hint: Option<&str>,
     ) -> Result<LauncherCommand> {
-        let placeholder_text = placeholder.filter(|p| !p.is_empty()).map(|p| p.to_string());
-        let prompt_text = prompt.filter(|p| !p.is_empty()).map(|p| p.to_string());
+        let hint_text = hint.filter(|h| !h.is_empty()).map(|h| h.to_string());
 
         match launcher_type {
             LauncherType::Fuzzel => Ok(LauncherCommand::Fuzzel {
                 icon_type: icon_type.to_string(),
-                placeholder: placeholder_text,
+                placeholder: hint_text,
             }),
             LauncherType::Rofi => Ok(LauncherCommand::Rofi {
                 icon_type: icon_type.to_string(),
-                placeholder: placeholder_text,
+                placeholder: hint_text,
             }),
-            LauncherType::Dmenu => Ok(LauncherCommand::Dmenu {
-                prompt: prompt_text,
-            }),
+            LauncherType::Dmenu => Ok(LauncherCommand::Dmenu { prompt: hint_text }),
             LauncherType::Walker => Ok(LauncherCommand::Walker {
-                placeholder: placeholder_text,
+                placeholder: hint_text,
             }),
             LauncherType::Custom => {
                 if let Some(cmd) = command_str {
-                    let mut args = Vec::new();
+                    let processed_cmd = Self::substitute_placeholders(cmd, hint)?;
+                    let (program, args) = Self::parse_command(&processed_cmd)?;
 
-                    if let Some(p) = prompt_text {
-                        args.push(("prompt".to_string(), p));
-                    }
-
-                    if let Some(p) = placeholder_text {
-                        args.push(("placeholder".to_string(), p));
-                    }
-
-                    Ok(LauncherCommand::Custom {
-                        command: cmd.clone(),
-                        args,
-                    })
+                    Ok(LauncherCommand::Custom { program, args })
                 } else {
                     Err(anyhow!("No custom launcher command provided"))
                 }
