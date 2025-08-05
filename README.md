@@ -132,10 +132,10 @@ bzmenu -l custom --launcher-command "my_custom_launcher --flag"
 
 #### Prompt and Placeholder support
 
-Use either `{prompt}` or `{placeholder}` as the value for the relevant flag in your command; each will be replaced with the appropriate text as needed. They return the same string, with `{prompt}` adding a colon at the end.
+Use `{hint}` as the value for the relevant flag in your command; it will be substituted with the appropriate text as needed.
 
 ```shell
-bzmenu -l custom --launcher-command "my_custom_launcher --prompt-flag '{prompt}'" # or --placeholder-flag '{placeholder}'
+bzmenu -l custom --launcher-command "my_custom_launcher --placeholder-flag '{hint}'" # or --prompt-flag '{hint}:'
 ```
 
 #### Example to enable all features

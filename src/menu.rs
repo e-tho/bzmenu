@@ -190,15 +190,9 @@ impl Menu {
         launcher_command: &Option<String>,
         input: Option<&str>,
         icon_type: &str,
-        prompt: Option<&str>,
+        hint: Option<&str>,
     ) -> Result<Option<String>> {
-        let cmd = Launcher::create_command(
-            &self.launcher_type,
-            launcher_command,
-            icon_type,
-            prompt,
-            prompt,
-        )?;
+        let cmd = Launcher::create_command(&self.launcher_type, launcher_command, icon_type, hint)?;
 
         Launcher::run(cmd, input)
     }
@@ -344,10 +338,10 @@ impl Menu {
             input.push_str(&format!("{option_text}\n"));
         }
 
-        let prompt = t!("menus.device.prompt", device_name = device_name);
+        let hint = t!("menus.device.hint", device_name = device_name);
 
         let menu_output =
-            self.run_launcher(launcher_command, Some(&input), icon_type, Some(&prompt))?;
+            self.run_launcher(launcher_command, Some(&input), icon_type, Some(&hint))?;
 
         if let Some(output) = menu_output {
             let cleaned_output = self.clean_menu_output(&output, icon_type);
@@ -464,7 +458,7 @@ impl Menu {
         passkey: &str,
         icon_type: &str,
     ) -> Result<bool> {
-        let prompt = t!(
+        let hint = t!(
             "menus.bluetooth.confirm_passkey",
             device_name = device_name,
             passkey = passkey
@@ -478,7 +472,7 @@ impl Menu {
         let input = self.get_icon_text(options, icon_type, 1);
 
         let menu_output =
-            self.run_launcher(launcher_command, Some(&input), icon_type, Some(&prompt))?;
+            self.run_launcher(launcher_command, Some(&input), icon_type, Some(&hint))?;
 
         if let Some(output) = menu_output {
             let cleaned_output = self.clean_menu_output(&output, icon_type);

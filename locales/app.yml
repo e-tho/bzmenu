@@ -19,7 +19,7 @@ menus:
           fr: "Appareil"
           de: "Gerät"
   device:
-    prompt:
+    hint:
       en: "Manage %{device_name}"
       fr: "Gérer %{device_name}"
       de: "%{device_name} bearbeiten"
