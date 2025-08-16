@@ -143,7 +143,7 @@ bzmenu -l custom --launcher-command "my_custom_launcher --placeholder-flag '{hin
 This example demonstrates enabling all available features in custom mode with `fuzzel`.
 
 ```shell
-bzmenu -l custom --launcher-command "fuzzel -d -p '{prompt}'"
+bzmenu -l custom --launcher-command "fuzzel -d --placeholder '{hint}'"
 ```
 
 ### Available Options
