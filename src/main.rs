@@ -4,7 +4,6 @@ use clap::{builder::EnumValueParser, Arg, Command};
 use rust_i18n::{i18n, set_locale};
 use std::{env, sync::Arc};
 use sys_locale::get_locale;
-use tokio::sync::mpsc::unbounded_channel;
 
 i18n!("locales", fallback = "en");
 
@@ -26,6 +25,8 @@ async fn main() -> Result<()> {
         String::from("en")
     });
     set_locale(&locale);
+
+    env_logger::init();
 
     let matches = Command::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
@@ -131,19 +132,11 @@ async fn main() -> Result<()> {
         .and_then(|s| s.parse::<u64>().ok())
         .unwrap_or(10);
 
-    let (log_sender, mut log_receiver) = unbounded_channel::<String>();
-    tokio::spawn(async move {
-        while let Some(log) = log_receiver.recv().await {
-            println!("LOG: {log}");
-        }
-    });
-
     run_app_loop(
         &menu,
         &command_str,
         &icon_type,
         spaces,
-        log_sender,
         icons,
         scan_duration,
     )
@@ -156,17 +149,10 @@ async fn run_app_loop(
     command_str: &Option<String>,
     icon_type: &str,
     spaces: usize,
-    log_sender: tokio::sync::mpsc::UnboundedSender<String>,
     icons: Arc<Icons>,
     scan_duration: u64,
 ) -> Result<()> {
-    let mut app = App::new(
-        menu.clone(),
-        log_sender.clone(),
-        icons.clone(),
-        scan_duration,
-    )
-    .await?;
+    let mut app = App::new(menu.clone(), icons.clone(), scan_duration).await?;
 
     loop {
         match app.run(menu, command_str, icon_type, spaces).await {
@@ -184,13 +170,7 @@ async fn run_app_loop(
         }
 
         if app.reset_mode {
-            app = App::new(
-                menu.clone(),
-                log_sender.clone(),
-                icons.clone(),
-                scan_duration,
-            )
-            .await?;
+            app = App::new(menu.clone(), icons.clone(), scan_duration).await?;
 
             app.reset_mode = false;
         }

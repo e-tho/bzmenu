@@ -11,10 +11,11 @@ use crate::{
 };
 use anyhow::Result;
 use bluer::Session;
+use log::{debug, error, info};
 use rust_i18n::t;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
-use tokio::{runtime::Builder, sync::mpsc::UnboundedSender};
+use tokio::runtime::Builder;
 
 pub struct App {
     pub running: bool,
@@ -24,7 +25,6 @@ pub struct App {
     agent_manager: AgentManager,
     scanner: Scanner,
     pairing_manager: PairingManager,
-    log_sender: UnboundedSender<String>,
     notification_manager: Arc<NotificationManager>,
     scan_duration: u64,
 }
@@ -38,40 +38,24 @@ impl App {
         &self.agent_manager
     }
 
-    pub async fn new(
-        _menu: Menu,
-        log_sender: UnboundedSender<String>,
-        icons: Arc<Icons>,
-        scan_duration: u64,
-    ) -> Result<Self> {
+    pub async fn new(_menu: Menu, icons: Arc<Icons>, scan_duration: u64) -> Result<Self> {
         let session = Arc::new(Session::new().await?);
         let notification_manager = Arc::new(NotificationManager::new(icons.clone()));
 
         let notification_manager_handler: Arc<dyn PairingConfirmationHandler> =
             notification_manager.clone();
 
-        let agent_manager = AgentManager::new(
-            session.clone(),
-            log_sender.clone(),
-            notification_manager_handler,
-        )
-        .await?;
+        let agent_manager =
+            AgentManager::new(session.clone(), notification_manager_handler).await?;
 
-        let controller = Controller::new(session.clone(), log_sender.clone()).await?;
+        let controller = Controller::new(session.clone()).await?;
 
-        let scanner = Scanner::new(
-            controller.adapter.clone(),
-            controller.is_scanning.clone(),
-            log_sender.clone(),
-        );
+        let scanner = Scanner::new(controller.adapter.clone(), controller.is_scanning.clone());
 
-        let pairing_manager = PairingManager::new(controller.adapter.clone(), log_sender.clone());
+        let pairing_manager = PairingManager::new(controller.adapter.clone());
 
         if !controller.is_powered {
-            try_send_log!(
-                log_sender,
-                t!("notifications.bt.adapter_powered_off").to_string()
-            );
+            info!("{}", t!("notifications.bt.adapter_powered_off"));
         }
 
         Ok(Self {
@@ -82,7 +66,6 @@ impl App {
             agent_manager,
             scanner,
             pairing_manager,
-            log_sender,
             notification_manager,
             scan_duration,
         })
@@ -127,10 +110,7 @@ impl App {
                     .await?;
                 }
                 None => {
-                    try_send_log!(
-                        self.log_sender,
-                        t!("notifications.bt.main_menu_exited").to_string()
-                    );
+                    debug!("{}", t!("notifications.bt.main_menu_exited"));
                     self.running = false;
                 }
             }
@@ -193,7 +173,7 @@ impl App {
                 }
             } else {
                 stay_in_settings = false;
-                try_send_log!(self.log_sender, "Exited settings menu".to_string());
+                debug!("Exited settings menu");
             }
         }
 
@@ -219,7 +199,7 @@ impl App {
                     t!("notifications.bt.discoverable_disabled")
                 };
 
-                try_send_log!(self.log_sender, msg.to_string());
+                info!("{msg}");
                 try_send_notification!(
                     self.notification_manager,
                     None,
@@ -239,7 +219,7 @@ impl App {
                     t!("notifications.bt.pairable_disabled")
                 };
 
-                try_send_log!(self.log_sender, msg.to_string());
+                info!("{msg}");
                 try_send_notification!(
                     self.notification_manager,
                     None,
@@ -270,10 +250,7 @@ impl App {
                     self.controller.power_on().await?;
                     self.controller.refresh().await?;
 
-                    try_send_log!(
-                        self.log_sender,
-                        t!("notifications.bt.adapter_enabled").to_string()
-                    );
+                    info!("{}", t!("notifications.bt.adapter_enabled"));
                     try_send_notification!(
                         self.notification_manager,
                         None,
@@ -285,10 +262,7 @@ impl App {
                 }
             }
         } else {
-            try_send_log!(
-                self.log_sender,
-                t!("notifications.bt.adapter_menu_exited").to_string()
-            );
+            info!("{}", t!("notifications.bt.adapter_menu_exited"));
             self.running = false;
         }
 
@@ -312,10 +286,7 @@ impl App {
             {
                 device_clone = refreshed_device;
             } else {
-                try_send_log!(
-                    self.log_sender,
-                    format!("Device {} is no longer available", device_clone.alias)
-                );
+                error!("Device {} is no longer available", device_clone.alias);
                 break;
             }
 
@@ -367,10 +338,7 @@ impl App {
                 }
                 None => {
                     stay_in_device_menu = false;
-                    try_send_log!(
-                        self.log_sender,
-                        format!("Exited device menu for {}", device_clone.alias)
-                    );
+                    debug!("Exited device menu for {}", device_clone.alias);
                 }
             }
         }
@@ -420,7 +388,7 @@ impl App {
     async fn perform_device_scan(&mut self) -> Result<()> {
         if self.controller.is_scanning.load(Ordering::Relaxed) {
             let msg = t!("notifications.bt.scan_already_in_progress");
-            try_send_log!(self.log_sender, msg.to_string());
+            info!("{msg}");
             try_send_notification!(
                 self.notification_manager,
                 None,
@@ -437,7 +405,6 @@ impl App {
         self.scanner.start_discovery(scan_duration).await?;
 
         let scanner_clone = self.scanner.clone();
-        let log_sender_clone = self.log_sender.clone();
 
         let progress_msg = t!("notifications.bt.scan_in_progress");
         let completed_msg = t!("notifications.bt.scan_completed");
@@ -445,10 +412,7 @@ impl App {
         let id = self.notification_manager.send_progress_notification(
             scan_duration,
             move || {
-                try_send_log!(
-                    log_sender_clone,
-                    "User cancelled Bluetooth scan".to_string()
-                );
+                debug!("User cancelled Bluetooth scan");
 
                 let rt = Builder::new_current_thread().enable_all().build().unwrap();
 
@@ -472,18 +436,11 @@ impl App {
             Some(id),
         );
 
-        self.log_sender
-            .send(completed_msg.to_string())
-            .unwrap_or_default();
-
         Ok(())
     }
 
     async fn perform_device_connection(&self, device: &crate::bz::device::Device) -> Result<()> {
-        try_send_log!(
-            self.log_sender,
-            format!("Connecting to device: {}", device.alias)
-        );
+        debug!("Connecting to device: {}", device.alias);
 
         let result = if !device.is_paired {
             self.pairing_manager.pair_device(device).await
@@ -498,7 +455,7 @@ impl App {
                 error = err.to_string()
             );
 
-            try_send_log!(self.log_sender, msg.to_string());
+            info!("{msg}");
             try_send_notification!(
                 self.notification_manager,
                 None,
@@ -519,7 +476,7 @@ impl App {
                     device_name = device.alias
                 );
 
-                try_send_log!(self.log_sender, msg.to_string());
+                info!("{msg}");
                 try_send_notification!(
                     self.notification_manager,
                     None,
@@ -544,7 +501,7 @@ impl App {
                     )
                 };
 
-                try_send_log!(self.log_sender, msg.to_string());
+                info!("{msg}");
 
                 try_send_notification!(
                     self.notification_manager,
@@ -561,10 +518,7 @@ impl App {
     }
 
     async fn perform_device_disconnection(&self, device: &crate::bz::device::Device) -> Result<()> {
-        try_send_log!(
-            self.log_sender,
-            format!("Disconnecting from device: {}", device.alias)
-        );
+        debug!("Disconnecting from device: {}", device.alias);
 
         self.pairing_manager.disconnect_device(device).await?;
 
@@ -573,7 +527,7 @@ impl App {
             device_name = device.alias
         );
 
-        try_send_log!(self.log_sender, msg.to_string());
+        info!("{msg}");
         try_send_notification!(
             self.notification_manager,
             None,
@@ -591,13 +545,10 @@ impl App {
         device: &crate::bz::device::Device,
         trust: bool,
     ) -> Result<()> {
-        try_send_log!(
-            self.log_sender,
-            format!(
-                "{} trust for device: {}",
-                if trust { "Enabling" } else { "Revoking" },
-                device.alias
-            )
+        info!(
+            "{} trust for device: {}",
+            if trust { "Enabling" } else { "Revoking" },
+            device.alias
         );
 
         device.set_trusted(trust).await?;
@@ -614,7 +565,7 @@ impl App {
             )
         };
 
-        try_send_log!(self.log_sender, msg.to_string());
+        info!("{msg}");
         try_send_notification!(
             self.notification_manager,
             None,
@@ -628,10 +579,7 @@ impl App {
     }
 
     async fn perform_forget_device(&self, device: &crate::bz::device::Device) -> Result<()> {
-        try_send_log!(
-            self.log_sender,
-            format!("Forgetting device: {}", device.alias)
-        );
+        info!("Forgetting device: {}", device.alias);
 
         self.pairing_manager.forget_device(device).await?;
 
@@ -640,7 +588,7 @@ impl App {
             device_name = device.alias
         );
 
-        try_send_log!(self.log_sender, msg.to_string());
+        info!("{msg}");
         try_send_notification!(
             self.notification_manager,
             None,
@@ -663,7 +611,7 @@ impl App {
         self.controller.power_off().await?;
 
         let msg = t!("notifications.bt.adapter_disabled").to_string();
-        try_send_log!(self.log_sender, msg.clone());
+        info!("{msg}");
         try_send_notification!(
             self.notification_manager,
             None,

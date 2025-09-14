@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use bluer::{Adapter, Session};
+use log::info;
 use std::sync::{atomic::AtomicBool, Arc};
-use tokio::sync::mpsc::UnboundedSender;
 
 use crate::bz::device::Device;
 
@@ -19,7 +19,7 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub async fn new(session: Arc<Session>, sender: UnboundedSender<String>) -> Result<Self> {
+    pub async fn new(session: Arc<Session>) -> Result<Self> {
         let adapter_names = session.adapter_names().await?;
         let adapter_name = adapter_names
             .first()
@@ -37,7 +37,7 @@ impl Controller {
 
         let (paired_devices, new_devices) = Self::get_devices(&adapter_arc).await?;
 
-        try_send_log!(sender, format!("Bluetooth adapter {name} initialized"));
+        info!("Bluetooth adapter {name} initialized");
 
         Ok(Self {
             adapter: adapter_arc,

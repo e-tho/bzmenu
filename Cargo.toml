@@ -21,6 +21,8 @@ tokio = { version = "1", features = [
 futures-util = { version = "0.3", default-features = false, features = [
     "alloc",
 ] }
+log = "0.4"
+env_logger = "0.11"
 clap = { version = "3", features = ["derive"] }
 nix = { version = "0.29", features = ["process", "signal"] }
 libc = "0.2"

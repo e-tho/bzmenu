@@ -3,6 +3,7 @@ use anyhow::Result;
 use bluer::agent::{Agent, AgentHandle, ReqError};
 use bluer::Session;
 use futures_util::FutureExt;
+use log::{debug, info};
 use std::{
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -26,7 +27,6 @@ pub struct AgentManager {
 impl AgentManager {
     pub async fn new(
         session: Arc<Session>,
-        log_sender: UnboundedSender<String>,
         pairing_handler: Arc<dyn PairingConfirmationHandler>,
     ) -> Result<Self> {
         let (passkey_sender, passkey_receiver) = unbounded_channel::<bool>();
@@ -36,7 +36,6 @@ impl AgentManager {
         let agent = {
             let confirmation_required_clone = confirmation_required.clone();
             let passkey_sender_clone = passkey_sender.clone();
-            let log_sender_clone = log_sender.clone();
             let pairing_handler = pairing_handler.clone();
 
             Agent {
@@ -44,7 +43,6 @@ impl AgentManager {
                 request_confirmation: Some(Box::new(move |req| {
                     let confirmation_required = confirmation_required_clone.clone();
                     let _passkey_sender = passkey_sender_clone.clone();
-                    let log_sender = log_sender_clone.clone();
                     let pairing_handler = pairing_handler.clone();
 
                     async move {
@@ -53,9 +51,8 @@ impl AgentManager {
                         let device_address = req.device.to_string();
                         let passkey_str = format!("{:06}", req.passkey);
 
-                        try_send_log!(
-                            log_sender,
-                            format!("Confirm passkey {passkey_str} for device {device_address}? (yes/no)")
+                        info!(
+                            "Confirm passkey {passkey_str} for device {device_address}? (yes/no)"
                         );
 
                         let (tx, mut rx) = tokio::sync::mpsc::channel::<bool>(1);
@@ -67,25 +64,17 @@ impl AgentManager {
                             &passkey_str,
                             Box::new({
                                 let tx = tx.clone();
-                                let log_sender = log_sender.clone();
                                 let device_addr = device_address_clone.clone();
                                 move || {
-                                    try_send_log!(
-                                        log_sender,
-                                        format!("User confirmed pairing for device {device_addr}")
-                                    );
+                                    debug!("User confirmed pairing for device {device_addr}");
                                     let _ = tx.blocking_send(true);
                                 }
                             }),
                             Box::new({
                                 let tx = tx.clone();
-                                let log_sender = log_sender.clone();
                                 let device_addr = device_address_clone.clone();
                                 move || {
-                                    try_send_log!(
-                                        log_sender,
-                                        format!("User rejected pairing for device {device_addr}")
-                                    );
+                                    debug!("User rejected pairing for device {device_addr}");
                                     let _ = tx.blocking_send(false);
                                 }
                             }),
@@ -107,7 +96,7 @@ impl AgentManager {
 
         let agent_handle = session.register_agent(agent).await?;
 
-        try_send_log!(log_sender, "Bluetooth agent registered".to_string());
+        info!("Bluetooth agent registered");
 
         Ok(Self {
             session,
