@@ -38,15 +38,15 @@ impl App {
         &self.agent_manager
     }
 
-    pub async fn new(_menu: Menu, icons: Arc<Icons>, scan_duration: u64) -> Result<Self> {
+    pub async fn new(icons: Arc<Icons>, scan_duration: u64) -> Result<Self> {
         let session = Arc::new(Session::new().await?);
         let notification_manager = Arc::new(NotificationManager::new(icons.clone()));
 
-        let notification_manager_handler: Arc<dyn PairingConfirmationHandler> =
-            notification_manager.clone();
-
-        let agent_manager =
-            AgentManager::new(session.clone(), notification_manager_handler).await?;
+        let agent_manager = AgentManager::new(
+            session.clone(),
+            notification_manager.clone() as Arc<dyn PairingConfirmationHandler>,
+        )
+        .await?;
 
         let controller = Controller::new(session.clone()).await?;
 
