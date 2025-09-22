@@ -1,6 +1,6 @@
 [package]
 name = "bzmenu"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2018"
 description = "Launcher-driven Bluetooth manager for Linux"
 authors = ["e-tho"]

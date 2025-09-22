@@ -350,7 +350,7 @@ checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 
 [[package]]
 name = "bzmenu"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "bluer",
