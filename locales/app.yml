@@ -8,47 +8,56 @@ menus:
           en: "Scan for Devices"
           fr: "Rechercher des appareils"
           de: "Nach Geräten scannen"
+          es: "Buscar dispositivos"
       settings:
         name:
           en: "Settings"
           fr: "Paramètres"
           de: "Einstellungen"
+          es: "Configuración"
       device:
         name:
           en: "Device"
           fr: "Appareil"
           de: "Gerät"
+          es: "Dispositivo"
   device:
     hint:
       en: "Manage %{device_name}"
       fr: "Gérer %{device_name}"
       de: "%{device_name} bearbeiten"
+      es: "Gestionar %{device_name}"
     options:
       connect:
         name:
           en: "Connect"
           fr: "Connecter"
           de: "Verbinden"
+          es: "Conectar"
       disconnect:
         name:
           en: "Disconnect"
           fr: "Déconnecter"
           de: "Trennen"
+          es: "Desconectar"
       trust:
         name:
           en: "Trust Device"
           fr: "Faire confiance à l'appareil"
           de: "Gerät vertrauen"
+          es: "Confiar en el dispositivo"
       revoke_trust:
         name:
           en: "Revoke Trust"
           fr: "Révoquer la confiance"
           de: "Gerät nicht mehr vertrauen"
+          es: "Dejar de confiar"
       forget:
         name:
           en: "Forget Device"
           fr: "Oublier l'appareil"
           de: "Gerät vergessen"
+          es: "Olvidar dispositivo"
   settings:
     options:
       enable_discoverable:
@@ -56,26 +65,31 @@ menus:
           en: "Make Device Visible"
           fr: "Rendre l'appareil visible"
           de: "Gerät sichtbar machen"
+          es: "Hacer visible el dispositivo"
       disable_discoverable:
         name:
           en: "Make Device Hidden"
           fr: "Rendre l'appareil invisible"
           de: "Gerät verstecken"
+          es: "Ocultar el dispositivo"
       enable_pairable:
         name:
           en: "Allow Pairing"
           fr: "Autoriser l'appairage"
           de: "Koppeln erlauben"
+          es: "Permitir emparejamiento"
       disable_pairable:
         name:
           en: "Disallow Pairing"
           fr: "Interdire l'appairage"
           de: "Koppeln verbieten"
+          es: "No permitir emparejamiento"
       disable_adapter:
         name:
           en: "Disable Bluetooth"
           fr: "Désactiver Bluetooth"
           de: "Bluetooth deaktivieren"
+          es: "Desactivar Bluetooth"
   adapter:
     options:
       power_on_device:
@@ -83,6 +97,7 @@ menus:
           en: "Enable Bluetooth"
           fr: "Activer Bluetooth"
           de: "Bluetooth aktivieren"
+          es: "Activar Bluetooth"
   bluetooth:
     options:
       enable_discoverable:
@@ -90,37 +105,45 @@ menus:
           en: "Make Discoverable"
           fr: "Rendre visible"
           de: "Entdeckbar machen"
+          es: "Hacer visible"
       disable_discoverable:
         name:
           en: "Make Hidden"
           fr: "Rendre invisible"
           de: "Versteckt machen"
+          es: "Ocultar"
       enable_pairable:
         name:
           en: "Enable Pairing"
           fr: "Activer l'appairage"
           de: "Koppeln aktivieren"
+          es: "Activar emparejamiento"
       disable_pairable:
         name:
           en: "Disable Pairing"
           fr: "Désactiver l'appairage"
           de: "Koppeln deaktivieren"
+          es: "Desactivar emparejamiento"
     pairing_request:
       en: "Bluetooth Pairing Request"
       fr: "Demande d'appairage Bluetooth"
       de: "Bluetooth-Verbindungsanfrage"
+      es: "Solicitud de emparejamiento Bluetooth"
     confirm_passkey:
       en: "Confirm passkey: <b>%{passkey}</b>"
       fr: "Confirmer le code : <b>%{passkey}</b>"
       de: "Code <b>%{passkey}</b> bestätigen"
+      es: "Confirmar código: <b>%{passkey}</b>"
     confirm:
       en: "Confirm"
       fr: "Confirmer"
       de: "Bestätigen"
+      es: "Confirmar"
     cancel:
       en: "Cancel"
       fr: "Annuler"
       de: "Abbrechen"
+      es: "Cancelar"
 
 notifications:
   bt:
@@ -128,83 +151,104 @@ notifications:
       en: "Bluetooth scan already in progress"
       fr: "Recherche Bluetooth déjà en cours"
       de: "Bluetooth-Scan läuft bereits"
+      es: "Búsqueda de Bluetooth ya en curso"
     scan_in_progress:
       en: "Searching for Bluetooth devices. Click to stop."
       fr: "Recherche d'appareils Bluetooth en cours. Cliquez pour arrêter."
       de: "Es wird nach Bluetooth-Geräten gesucht. Klicken, um Abzubrechen."
+      es: "Buscando dispositivos Bluetooth. Haz clic para detener."
     scan_completed:
       en: "Bluetooth scan completed"
       fr: "Recherche Bluetooth terminée"
       de: "Bluetooth-Scan fertig"
+      es: "Búsqueda de Bluetooth finalizada"
     scan_stop_action:
       en: "Stop Scan"
       fr: "Arrêter la recherche"
       de: "Scan abbrechen"
+      es: "Detener búsqueda"
     device_connected:
       en: "Connected to %{device_name}"
       fr: "Connecté à %{device_name}"
       de: "Mit %{device_name} verbunden"
+      es: "Conectado a %{device_name}"
     device_disconnected:
       en: "Disconnected from %{device_name}"
       fr: "Déconnecté de %{device_name}"
       de: "Von %{device_name} getrennt"
+      es: "Desconectado de %{device_name}"
     device_paired:
       en: "Device paired: %{device_name}"
       fr: "Appareil appairé: %{device_name}"
       de: "Mit Gerät gekoppelt: %{device_name}"
+      es: "Dispositivo emparejado: %{device_name}"
     device_trusted:
       en: "Device trusted: %{device_name}"
       fr: "Appareil approuvé: %{device_name}"
       de: "Gerät wird vertraut: %{device_name}"
+      es: "Dispositivo de confianza: %{device_name}"
     device_untrusted:
       en: "Device untrusted: %{device_name}"
       fr: "Appareil non approuvé: %{device_name}"
       de: "Gerät wird nicht vertraut: %{device_name}"
+      es: "Ya no se confía en: %{device_name}"
     device_forgotten:
       en: "Device removed: %{device_name}"
       fr: "Appareil supprimé: %{device_name}"
       de: "Gerät entfernt: %{device_name}"
+      es: "Dispositivo eliminado: %{device_name}"
     adapter_powered_off:
       en: "Bluetooth is disabled"
       fr: "Bluetooth est désactivé"
       de: "Bluetooth ist deaktiviert"
+      es: "El Bluetooth está desactivado"
     adapter_enabled:
       en: "Bluetooth enabled"
       fr: "Bluetooth activé"
       de: "Bluetooth aktiviert"
+      es: "Bluetooth activado"
     adapter_disabled:
       en: "Bluetooth disabled"
       fr: "Bluetooth désactivé"
       de: "Bluetooth deaktiviert"
+      es: "Bluetooth desactivado"
     discoverable_enabled:
       en: "Your device is now discoverable"
       fr: "Votre appareil est maintenant visible"
       de: "Das Gerät ist jetzt entdeckbar"
+      es: "Tu dispositivo es ahora visible"
     discoverable_disabled:
       en: "Your device is now hidden"
       fr: "Votre appareil est maintenant invisible"
       de: "Das Gerät ist jetzt versteckt"
+      es: "Tu dispositivo está ahora oculto"
     pairable_enabled:
       en: "Pairing enabled"
       fr: "Appairage activé"
       de: "Koppeln aktiviert"
+      es: "Emparejamiento activado"
     pairable_disabled:
       en: "Pairing disabled"
       fr: "Appairage désactivé"
       de: "Koppeln deaktiviert"
+      es: "Emparejamiento desactivado"
     main_menu_exited:
       en: "Exited menu"
       fr: "Menu fermé"
       de: "Menü verlassen"
+      es: "Menú cerrado"
     pairing_failed:
       en: "Failed to pair with %{device_name}: %{error}"
       fr: "Échec de l'appairage avec %{device_name} : %{error}"
       de: "Konnte nicht koppeln mit Gerät %{device_name}: %{error}"
+      es: "Error al emparejar con %{device_name}: %{error}"
     device_out_of_range:
       en: "Device '%{device_name}' is not available or out of range"
       fr: "L'appareil '%{device_name}' n'est pas disponible ou hors de portée"
       de: "Gerät '%{device_name}' ist nicht erreichbar oder außer Reichweite"
+      es: "El dispositivo '%{device_name}' no está disponible o está fuera de alcance"
     connection_failed:
       en: "Connection to '%{device_name}' failed: %{error}"
       fr: "Échec de la connexion à '%{device_name}' : %{error}"
       de: "Konnte nicht verbinden mit Gerät %{device_name}: %{error}"
+      es: "Error de conexión con '%{device_name}': %{error}"
