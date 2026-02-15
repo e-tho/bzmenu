@@ -87,6 +87,7 @@ impl Icons {
         font_icons.insert("battery_20", '\u{f007b}');
         font_icons.insert("battery_10", '\u{f007a}');
 
+        font_icons.insert("back", '\u{f004d}');
         font_icons.insert("ok", '\u{f05e1}');
         font_icons.insert("error", '\u{f05d6}');
         font_icons.insert("paired", '\u{f119f}');
@@ -310,6 +311,7 @@ impl Icons {
             ),
         );
 
+        xdg_icons.insert("back", IconDefinition::simple("go-previous-symbolic"));
         xdg_icons.insert("ok", IconDefinition::simple("emblem-default-symbolic"));
         xdg_icons.insert("error", IconDefinition::simple("dialog-error-symbolic"));
         xdg_icons.insert("paired", IconDefinition::simple("emblem-checked-symbolic"));

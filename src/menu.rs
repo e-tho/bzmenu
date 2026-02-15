@@ -38,6 +38,7 @@ pub enum DeviceMenuOptions {
     Trust,
     RevokeTrust,
     Forget,
+    Back,
 }
 
 impl DeviceMenuOptions {
@@ -52,6 +53,7 @@ impl DeviceMenuOptions {
                 Some(DeviceMenuOptions::RevokeTrust)
             }
             s if s == t!("menus.device.options.forget.name") => Some(DeviceMenuOptions::Forget),
+            s if s == t!("menus.common.back") => Some(DeviceMenuOptions::Back),
             _ => None,
         }
     }
@@ -63,6 +65,7 @@ impl DeviceMenuOptions {
             DeviceMenuOptions::Trust => t!("menus.device.options.trust.name"),
             DeviceMenuOptions::RevokeTrust => t!("menus.device.options.revoke_trust.name"),
             DeviceMenuOptions::Forget => t!("menus.device.options.forget.name"),
+            DeviceMenuOptions::Back => t!("menus.common.back"),
         }
     }
 }
@@ -72,6 +75,7 @@ pub enum SettingsMenuOptions {
     ToggleDiscoverable,
     TogglePairable,
     DisableAdapter,
+    Back,
 }
 
 impl SettingsMenuOptions {
@@ -86,6 +90,7 @@ impl SettingsMenuOptions {
             s if s == t!("menus.settings.options.disable_adapter.name") => {
                 Some(SettingsMenuOptions::DisableAdapter)
             }
+            s if s == t!("menus.common.back") => Some(SettingsMenuOptions::Back),
             _ => None,
         }
     }
@@ -101,6 +106,7 @@ impl SettingsMenuOptions {
             SettingsMenuOptions::DisableAdapter => {
                 t!("menus.settings.options.disable_adapter.name")
             }
+            SettingsMenuOptions::Back => t!("menus.common.back"),
         }
     }
 }
@@ -321,6 +327,7 @@ impl Menu {
         spaces: usize,
         available_options: Vec<DeviceMenuOptions>,
         device_name: &str,
+        back_on_escape: bool,
     ) -> Result<Option<DeviceMenuOptions>> {
         let mut input = String::new();
 
@@ -331,11 +338,18 @@ impl Menu {
                 DeviceMenuOptions::Trust => "trust",
                 DeviceMenuOptions::RevokeTrust => "revoke_trust",
                 DeviceMenuOptions::Forget => "forget",
+                DeviceMenuOptions::Back => "back",
             };
 
             let option_text =
                 self.get_icon_text(vec![(icon_key, option.to_str())], icon_type, spaces);
             input.push_str(&format!("{option_text}\n"));
+        }
+
+        if !back_on_escape {
+            let back_text =
+                self.get_icon_text(vec![("back", t!("menus.common.back"))], icon_type, spaces);
+            input.push_str(&format!("{back_text}\n"));
         }
 
         let hint = t!("menus.device.hint", device_name = device_name);
@@ -377,6 +391,7 @@ impl Menu {
         controller: &Controller,
         icon_type: &str,
         spaces: usize,
+        back_on_escape: bool,
     ) -> Result<Option<SettingsMenuOptions>> {
         let (discoverable_text, discoverable_icon) = if controller.is_discoverable {
             (
@@ -403,12 +418,17 @@ impl Menu {
         };
 
         let disable_adapter_text = t!("menus.settings.options.disable_adapter.name");
+        let back_text = t!("menus.common.back");
 
-        let options = vec![
+        let mut options = vec![
             (discoverable_icon, discoverable_text.as_ref()),
             (pairable_icon, pairable_text.as_ref()),
             ("disable_adapter", disable_adapter_text.as_ref()),
         ];
+
+        if !back_on_escape {
+            options.push(("back", back_text.as_ref()));
+        }
 
         let input = self.get_icon_text(options, icon_type, spaces);
 
@@ -423,6 +443,8 @@ impl Menu {
                 return Ok(Some(SettingsMenuOptions::TogglePairable));
             } else if cleaned_output == disable_adapter_text.as_ref() {
                 return Ok(Some(SettingsMenuOptions::DisableAdapter));
+            } else if cleaned_output == back_text.as_ref() {
+                return Ok(Some(SettingsMenuOptions::Back));
             }
         }
 

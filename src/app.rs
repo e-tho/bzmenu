@@ -20,6 +20,7 @@ use tokio::runtime::Builder;
 pub struct App {
     pub running: bool,
     pub reset_mode: bool,
+    pub back_on_escape: bool,
     session: Arc<Session>,
     controller: Controller,
     agent_manager: AgentManager,
@@ -38,7 +39,7 @@ impl App {
         &self.agent_manager
     }
 
-    pub async fn new(icons: Arc<Icons>, scan_duration: u64) -> Result<Self> {
+    pub async fn new(icons: Arc<Icons>, scan_duration: u64, back_on_escape: bool) -> Result<Self> {
         let session = Arc::new(Session::new().await?);
         let notification_manager = Arc::new(NotificationManager::new(icons.clone()));
 
@@ -61,6 +62,7 @@ impl App {
         Ok(Self {
             running: true,
             reset_mode: false,
+            back_on_escape,
             session,
             controller,
             agent_manager,
@@ -160,10 +162,18 @@ impl App {
             self.controller.refresh().await?;
 
             if let Some(option) = menu
-                .show_settings_menu(menu_command, &self.controller, icon_type, spaces)
+                .show_settings_menu(
+                    menu_command,
+                    &self.controller,
+                    icon_type,
+                    spaces,
+                    self.back_on_escape,
+                )
                 .await?
             {
-                if matches!(option, SettingsMenuOptions::DisableAdapter) {
+                if matches!(option, SettingsMenuOptions::Back) {
+                    stay_in_settings = false;
+                } else if matches!(option, SettingsMenuOptions::DisableAdapter) {
                     self.handle_settings_options(menu, menu_command, icon_type, spaces, option)
                         .await?;
                     stay_in_settings = false;
@@ -172,6 +182,9 @@ impl App {
                         .await?;
                 }
             } else {
+                if !self.back_on_escape {
+                    self.running = false;
+                }
                 stay_in_settings = false;
                 debug!("Exited settings menu");
             }
@@ -189,6 +202,7 @@ impl App {
         option: SettingsMenuOptions,
     ) -> Result<()> {
         match option {
+            SettingsMenuOptions::Back => {}
             SettingsMenuOptions::ToggleDiscoverable => {
                 let new_state = !self.controller.is_discoverable;
                 self.controller.set_discoverable(new_state).await?;
@@ -303,11 +317,15 @@ impl App {
                     spaces,
                     available_options,
                     &device_clone.alias,
+                    self.back_on_escape,
                 )
                 .await?
             {
                 Some(option) => {
                     match option {
+                        DeviceMenuOptions::Back => {
+                            stay_in_device_menu = false;
+                        }
                         DeviceMenuOptions::Connect => {
                             if !device_clone.is_connected {
                                 self.perform_device_connection(&device_clone).await?;
@@ -337,6 +355,9 @@ impl App {
                     self.controller.refresh().await?;
                 }
                 None => {
+                    if !self.back_on_escape {
+                        self.running = false;
+                    }
                     stay_in_device_menu = false;
                     debug!("Exited device menu for {}", device_clone.alias);
                 }

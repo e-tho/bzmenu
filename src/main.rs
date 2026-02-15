@@ -90,6 +90,12 @@ async fn main() -> Result<()> {
                 .default_value("10")
                 .help("Duration of Bluetooth device discovery in seconds"),
         )
+        .arg(
+            Arg::new("back_on_escape")
+                .long("back-on-escape")
+                .takes_value(false)
+                .help("Return to previous menu on escape instead of exiting"),
+        )
         .get_matches();
 
     let launcher_type: LauncherType = if matches.contains_id("launcher") {
@@ -129,6 +135,8 @@ async fn main() -> Result<()> {
         .and_then(|s| s.parse::<u64>().ok())
         .unwrap_or(10);
 
+    let back_on_escape = matches.contains_id("back_on_escape");
+
     run_app_loop(
         &menu,
         &command_str,
@@ -136,6 +144,7 @@ async fn main() -> Result<()> {
         spaces,
         icons,
         scan_duration,
+        back_on_escape,
     )
     .await?;
     Ok(())
@@ -148,8 +157,9 @@ async fn run_app_loop(
     spaces: usize,
     icons: Arc<Icons>,
     scan_duration: u64,
+    back_on_escape: bool,
 ) -> Result<()> {
-    let mut app = App::new(icons.clone(), scan_duration).await?;
+    let mut app = App::new(icons.clone(), scan_duration, back_on_escape).await?;
 
     loop {
         match app.run(menu, command_str, icon_type, spaces).await {
@@ -167,7 +177,7 @@ async fn run_app_loop(
         }
 
         if app.reset_mode {
-            app = App::new(icons.clone(), scan_duration).await?;
+            app = App::new(icons.clone(), scan_duration, back_on_escape).await?;
             app.reset_mode = false;
         }
     }

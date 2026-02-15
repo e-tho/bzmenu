@@ -154,6 +154,7 @@ bzmenu -l custom --launcher-command "fuzzel -d --placeholder '{hint}'"
 | `-i`, `--icon`       | Specify the icon type to use.                             | `font`, `xdg`                                 | `font`        |
 | `-s`, `--spaces`     | Specify icon to text space count (font icons only).       | Any positive integer                          | `1`           |
 | `--scan-duration`    | Specify the duration of device discovery in seconds.      | Any positive integer                          | `10`          |
+| `--back-on-escape`   | Return to previous menu on escape.                        | N/A                                           | `false`       |
 
 ## Contributing
 
