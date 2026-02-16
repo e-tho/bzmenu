@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use bzmenu::{app::App, icons::Icons, launcher::LauncherType, menu::Menu};
-use clap::{builder::EnumValueParser, Arg, Command};
+use clap::{Arg, Command};
 use rust_i18n::{i18n, set_locale};
 use std::{env, sync::Arc};
 use sys_locale::get_locale;
@@ -34,8 +34,7 @@ async fn main() -> Result<()> {
                 .short('l')
                 .long("launcher")
                 .required(true)
-                .takes_value(true)
-                .value_parser(EnumValueParser::<LauncherType>::new())
+                .value_parser(clap::value_parser!(LauncherType))
                 .conflicts_with("menu")
                 .help("Launcher to use (replaces deprecated --menu)"),
         )
@@ -43,15 +42,13 @@ async fn main() -> Result<()> {
             Arg::new("menu") // deprecated
                 .short('m')
                 .long("menu")
-                .takes_value(true)
-                .value_parser(EnumValueParser::<LauncherType>::new())
+                .value_parser(clap::value_parser!(LauncherType))
                 .hide(true)
                 .help("DEPRECATED: use --launcher instead"),
         )
         .arg(
             Arg::new("launcher_command")
                 .long("launcher-command")
-                .takes_value(true)
                 .required_if_eq("launcher", "custom")
                 .conflicts_with("menu_command")
                 .value_parser(validate_launcher_command)
@@ -60,7 +57,6 @@ async fn main() -> Result<()> {
         .arg(
             Arg::new("menu_command") // deprecated
                 .long("menu-command")
-                .takes_value(true)
                 .required_if_eq("menu", "custom")
                 .hide(true)
                 .value_parser(validate_launcher_command)
@@ -70,8 +66,7 @@ async fn main() -> Result<()> {
             Arg::new("icon")
                 .short('i')
                 .long("icon")
-                .takes_value(true)
-                .possible_values(["font", "xdg"])
+                .value_parser(["font", "xdg"])
                 .default_value("font")
                 .help("Choose the type of icons to use"),
         )
@@ -79,33 +74,28 @@ async fn main() -> Result<()> {
             Arg::new("spaces")
                 .short('s')
                 .long("spaces")
-                .takes_value(true)
                 .default_value("1")
                 .help("Number of spaces between icon and text when using font icons"),
         )
         .arg(
             Arg::new("scan_duration")
                 .long("scan-duration")
-                .takes_value(true)
                 .default_value("10")
                 .help("Duration of Bluetooth device discovery in seconds"),
         )
         .arg(
             Arg::new("back_on_escape")
                 .long("back-on-escape")
-                .takes_value(false)
+                .action(clap::ArgAction::SetTrue)
                 .help("Return to previous menu on escape instead of exiting"),
         )
         .get_matches();
 
     let launcher_type: LauncherType = if matches.contains_id("launcher") {
-        matches
-            .get_one::<LauncherType>("launcher")
-            .cloned()
-            .unwrap()
+        matches.get_one::<LauncherType>("launcher").unwrap().clone()
     } else if matches.contains_id("menu") {
         eprintln!("WARNING: --menu flag is deprecated. Please use --launcher instead.");
-        matches.get_one::<LauncherType>("menu").cloned().unwrap()
+        matches.get_one::<LauncherType>("menu").unwrap().clone()
     } else {
         LauncherType::Dmenu
     };
@@ -121,7 +111,7 @@ async fn main() -> Result<()> {
         None
     };
 
-    let icon_type = matches.get_one::<String>("icon").cloned().unwrap();
+    let icon_type = matches.get_one::<String>("icon").unwrap().clone();
     let icons = Arc::new(Icons::new());
     let menu = Menu::new(launcher_type, icons.clone());
 
@@ -135,7 +125,7 @@ async fn main() -> Result<()> {
         .and_then(|s| s.parse::<u64>().ok())
         .unwrap_or(10);
 
-    let back_on_escape = matches.contains_id("back_on_escape");
+    let back_on_escape = matches.get_flag("back_on_escape");
 
     run_app_loop(
         &menu,
