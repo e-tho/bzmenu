@@ -22,7 +22,6 @@ pub enum LauncherType {
     Fuzzel,
     Rofi,
     Dmenu,
-    Walker,
     Custom,
 }
 
@@ -38,9 +37,6 @@ pub enum LauncherCommand {
     },
     Dmenu {
         prompt: Option<String>,
-    },
-    Walker {
-        placeholder: Option<String>,
     },
     Custom {
         program: String,
@@ -89,14 +85,6 @@ impl Launcher {
                 let mut cmd = Command::new("dmenu");
                 if let Some(hint_text) = prompt {
                     cmd.arg("-p").arg(format!("{hint_text}: "));
-                }
-                cmd
-            }
-            LauncherCommand::Walker { placeholder } => {
-                let mut cmd = Command::new("walker");
-                cmd.arg("-d").arg("-k");
-                if let Some(hint_text) = placeholder {
-                    cmd.arg("-p").arg(hint_text);
                 }
                 cmd
             }
@@ -207,9 +195,6 @@ impl Launcher {
                 placeholder: hint_text,
             }),
             LauncherType::Dmenu => Ok(LauncherCommand::Dmenu { prompt: hint_text }),
-            LauncherType::Walker => Ok(LauncherCommand::Walker {
-                placeholder: hint_text,
-            }),
             LauncherType::Custom => {
                 if let Some(cmd) = command_str {
                     let processed_cmd = Self::substitute_placeholders(cmd, hint)?;
