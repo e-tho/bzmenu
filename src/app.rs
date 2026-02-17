@@ -347,8 +347,9 @@ impl App {
                             }
                         }
                         DeviceMenuOptions::Forget => {
-                            self.perform_forget_device(&device_clone).await?;
-                            stay_in_device_menu = false;
+                            if self.perform_forget_device(&device_clone).await? {
+                                stay_in_device_menu = false;
+                            }
                         }
                     }
 
@@ -541,22 +542,35 @@ impl App {
     async fn perform_device_disconnection(&self, device: &crate::bz::device::Device) -> Result<()> {
         debug!("Disconnecting from device: {}", device.alias);
 
-        self.pairing_manager.disconnect_device(device).await?;
-
-        let msg = t!(
-            "notifications.bt.device_disconnected",
-            device_name = device.alias
-        );
-
-        info!("{msg}");
-        try_send_notification!(
-            self.notification_manager,
-            None,
-            Some(msg.to_string()),
-            Some("bluetooth"),
-            None,
-            None
-        );
+        match self.pairing_manager.disconnect_device(device).await {
+            Ok(()) => {
+                let msg = t!(
+                    "notifications.bt.device_disconnected",
+                    device_name = device.alias
+                );
+                info!("{msg}");
+                try_send_notification!(
+                    self.notification_manager,
+                    None,
+                    Some(msg.to_string()),
+                    Some("bluetooth"),
+                    None,
+                    None
+                );
+            }
+            Err(e) => {
+                let msg = e.to_string();
+                info!("{msg}");
+                try_send_notification!(
+                    self.notification_manager,
+                    None,
+                    Some(msg),
+                    Some("bluetooth"),
+                    None,
+                    None
+                );
+            }
+        }
 
         Ok(())
     }
@@ -572,54 +586,80 @@ impl App {
             device.alias
         );
 
-        device.set_trusted(trust).await?;
-
-        let msg = if trust {
-            t!(
-                "notifications.bt.device_trusted",
-                device_name = device.alias
-            )
-        } else {
-            t!(
-                "notifications.bt.device_untrusted",
-                device_name = device.alias
-            )
-        };
-
-        info!("{msg}");
-        try_send_notification!(
-            self.notification_manager,
-            None,
-            Some(msg.to_string()),
-            Some("bluetooth"),
-            None,
-            None
-        );
+        match device.set_trusted(trust).await {
+            Ok(()) => {
+                let msg = if trust {
+                    t!(
+                        "notifications.bt.device_trusted",
+                        device_name = device.alias
+                    )
+                } else {
+                    t!(
+                        "notifications.bt.device_untrusted",
+                        device_name = device.alias
+                    )
+                };
+                info!("{msg}");
+                try_send_notification!(
+                    self.notification_manager,
+                    None,
+                    Some(msg.to_string()),
+                    Some("bluetooth"),
+                    None,
+                    None
+                );
+            }
+            Err(e) => {
+                let msg = e.to_string();
+                info!("{msg}");
+                try_send_notification!(
+                    self.notification_manager,
+                    None,
+                    Some(msg),
+                    Some("bluetooth"),
+                    None,
+                    None
+                );
+            }
+        }
 
         Ok(())
     }
 
-    async fn perform_forget_device(&self, device: &crate::bz::device::Device) -> Result<()> {
+    async fn perform_forget_device(&self, device: &crate::bz::device::Device) -> Result<bool> {
         info!("Forgetting device: {}", device.alias);
 
-        self.pairing_manager.forget_device(device).await?;
-
-        let msg = t!(
-            "notifications.bt.device_forgotten",
-            device_name = device.alias
-        );
-
-        info!("{msg}");
-        try_send_notification!(
-            self.notification_manager,
-            None,
-            Some(msg.to_string()),
-            Some("bluetooth"),
-            None,
-            None
-        );
-
-        Ok(())
+        match self.pairing_manager.forget_device(device).await {
+            Ok(()) => {
+                let msg = t!(
+                    "notifications.bt.device_forgotten",
+                    device_name = device.alias
+                );
+                info!("{msg}");
+                try_send_notification!(
+                    self.notification_manager,
+                    None,
+                    Some(msg.to_string()),
+                    Some("bluetooth"),
+                    None,
+                    None
+                );
+                Ok(true)
+            }
+            Err(e) => {
+                let msg = e.to_string();
+                info!("{msg}");
+                try_send_notification!(
+                    self.notification_manager,
+                    None,
+                    Some(msg),
+                    Some("bluetooth"),
+                    None,
+                    None
+                );
+                Ok(false)
+            }
+        }
     }
 
     async fn perform_adapter_disable(
