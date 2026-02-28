@@ -20,7 +20,7 @@ use tokio::runtime::Builder;
 pub struct App {
     pub running: bool,
     pub reset_mode: bool,
-    pub back_on_escape: bool,
+    pub interactive: bool,
     session: Arc<Session>,
     controller: Controller,
     agent_manager: AgentManager,
@@ -39,7 +39,7 @@ impl App {
         &self.agent_manager
     }
 
-    pub async fn new(icons: Arc<Icons>, scan_duration: u64, back_on_escape: bool) -> Result<Self> {
+    pub async fn new(icons: Arc<Icons>, scan_duration: u64, interactive: bool) -> Result<Self> {
         let session = Arc::new(Session::new().await?);
         let notification_manager = Arc::new(NotificationManager::new(icons.clone()));
 
@@ -62,7 +62,7 @@ impl App {
         Ok(Self {
             running: true,
             reset_mode: false,
-            back_on_escape,
+            interactive,
             session,
             controller,
             agent_manager,
@@ -167,7 +167,7 @@ impl App {
                     &self.controller,
                     icon_type,
                     spaces,
-                    self.back_on_escape,
+                    self.interactive,
                 )
                 .await?
             {
@@ -180,13 +180,16 @@ impl App {
                 } else {
                     self.handle_settings_options(menu, menu_command, icon_type, spaces, option)
                         .await?;
+                    if !self.interactive {
+                        self.running = false;
+                        stay_in_settings = false;
+                    }
                 }
             } else {
-                if !self.back_on_escape {
+                if !self.interactive {
                     self.running = false;
                 }
                 stay_in_settings = false;
-                debug!("Exited settings menu");
             }
         }
 
@@ -317,7 +320,7 @@ impl App {
                     spaces,
                     available_options,
                     &device_clone.alias,
-                    self.back_on_escape,
+                    self.interactive,
                 )
                 .await?
             {
@@ -329,26 +332,45 @@ impl App {
                         DeviceMenuOptions::Connect => {
                             if !device_clone.is_connected {
                                 self.perform_device_connection(&device_clone).await?;
+                                if !self.interactive {
+                                    stay_in_device_menu = false;
+                                    self.running = false;
+                                }
                             }
                         }
                         DeviceMenuOptions::Disconnect => {
                             if device_clone.is_connected {
                                 self.perform_device_disconnection(&device_clone).await?;
+                                if !self.interactive {
+                                    stay_in_device_menu = false;
+                                    self.running = false;
+                                }
                             }
                         }
                         DeviceMenuOptions::Trust => {
                             if !device_clone.is_trusted {
                                 self.perform_trust_device(&device_clone, true).await?;
+                                if !self.interactive {
+                                    stay_in_device_menu = false;
+                                    self.running = false;
+                                }
                             }
                         }
                         DeviceMenuOptions::RevokeTrust => {
                             if device_clone.is_trusted {
                                 self.perform_trust_device(&device_clone, false).await?;
+                                if !self.interactive {
+                                    stay_in_device_menu = false;
+                                    self.running = false;
+                                }
                             }
                         }
                         DeviceMenuOptions::Forget => {
                             if self.perform_forget_device(&device_clone).await? {
                                 stay_in_device_menu = false;
+                                if !self.interactive {
+                                    self.running = false;
+                                }
                             }
                         }
                     }
@@ -356,11 +378,10 @@ impl App {
                     self.controller.refresh().await?;
                 }
                 None => {
-                    if !self.back_on_escape {
+                    if !self.interactive {
                         self.running = false;
                     }
                     stay_in_device_menu = false;
-                    debug!("Exited device menu for {}", device_clone.alias);
                 }
             }
         }
@@ -682,8 +703,12 @@ impl App {
             None
         );
 
-        self.handle_adapter_options(menu, menu_command, icon_type, spaces)
-            .await?;
+        if self.interactive {
+            self.handle_adapter_options(menu, menu_command, icon_type, spaces)
+                .await?;
+        } else {
+            self.running = false;
+        }
 
         Ok(())
     }

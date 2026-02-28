@@ -147,14 +147,14 @@ bzmenu -l custom --launcher-command "fuzzel -d --placeholder '{hint}'"
 
 ### Available Options
 
-| Flag                 | Description                                               | Supported Values                              | Default Value |
-| -------------------- | --------------------------------------------------------- | --------------------------------------------- | ------------- |
-| `-l`, `--launcher`   | Specify the launcher to use (**required**).               | `dmenu`, `rofi`, `fuzzel`, `bemenu`, `custom` | `None`        |
-| `--launcher-command` | Specify the command to use when `custom` launcher is set. | Any valid shell command                       | `None`        |
-| `-i`, `--icon`       | Specify the icon type to use.                             | `font`, `xdg`                                 | `font`        |
-| `-s`, `--spaces`     | Specify icon to text space count (font icons only).       | Any positive integer                          | `1`           |
-| `--scan-duration`    | Specify the duration of device discovery in seconds.      | Any positive integer                          | `10`          |
-| `--back-on-escape`   | Return to previous menu on escape.                        | N/A                                           | `false`       |
+| Flag                 | Description                                                        | Supported Values                              | Default Value |
+| -------------------- | ------------------------------------------------------------------ | --------------------------------------------- | ------------- |
+| `-l`, `--launcher`   | Specify the launcher to use (**required**).                        | `dmenu`, `rofi`, `fuzzel`, `bemenu`, `custom` | `None`        |
+| `--launcher-command` | Specify the command to use when `custom` launcher is set.          | Any valid shell command                       | `None`        |
+| `-i`, `--icon`       | Specify the icon type to use.                                      | `font`, `xdg`                                 | `font`        |
+| `-s`, `--spaces`     | Specify icon to text space count (font icons only).                | Any positive integer                          | `1`           |
+| `--scan-duration`    | Specify the duration of device discovery in seconds.               | Any positive integer                          | `10`          |
+| `--interactive`      | Stay in menus after actions and return to previous menu on escape. | N/A                                           | `false`       |
 
 ## Contributing
 

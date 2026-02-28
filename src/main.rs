@@ -84,10 +84,10 @@ async fn main() -> Result<()> {
                 .help("Duration of Bluetooth device discovery in seconds"),
         )
         .arg(
-            Arg::new("back_on_escape")
-                .long("back-on-escape")
+            Arg::new("interactive")
+                .long("interactive")
                 .action(clap::ArgAction::SetTrue)
-                .help("Return to previous menu on escape instead of exiting"),
+                .help("Stay in menus after actions and return to previous menu on escape"),
         )
         .get_matches();
 
@@ -125,7 +125,7 @@ async fn main() -> Result<()> {
         .and_then(|s| s.parse::<u64>().ok())
         .unwrap_or(10);
 
-    let back_on_escape = matches.get_flag("back_on_escape");
+    let interactive = matches.get_flag("interactive");
 
     run_app_loop(
         &menu,
@@ -134,7 +134,7 @@ async fn main() -> Result<()> {
         spaces,
         icons,
         scan_duration,
-        back_on_escape,
+        interactive,
     )
     .await?;
     Ok(())
@@ -147,9 +147,9 @@ async fn run_app_loop(
     spaces: usize,
     icons: Arc<Icons>,
     scan_duration: u64,
-    back_on_escape: bool,
+    interactive: bool,
 ) -> Result<()> {
-    let mut app = App::new(icons.clone(), scan_duration, back_on_escape).await?;
+    let mut app = App::new(icons.clone(), scan_duration, interactive).await?;
 
     loop {
         match app.run(menu, command_str, icon_type, spaces).await {
@@ -167,7 +167,7 @@ async fn run_app_loop(
         }
 
         if app.reset_mode {
-            app = App::new(icons.clone(), scan_duration, back_on_escape).await?;
+            app = App::new(icons.clone(), scan_duration, interactive).await?;
             app.reset_mode = false;
         }
     }

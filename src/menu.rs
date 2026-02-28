@@ -327,7 +327,7 @@ impl Menu {
         spaces: usize,
         available_options: Vec<DeviceMenuOptions>,
         device_name: &str,
-        back_on_escape: bool,
+        interactive: bool,
     ) -> Result<Option<DeviceMenuOptions>> {
         let mut input = String::new();
 
@@ -346,7 +346,7 @@ impl Menu {
             input.push_str(&format!("{option_text}\n"));
         }
 
-        if !back_on_escape {
+        if !interactive {
             let back_text =
                 self.get_icon_text(vec![("back", t!("menus.common.back"))], icon_type, spaces);
             input.push_str(&format!("{back_text}\n"));
@@ -391,7 +391,7 @@ impl Menu {
         controller: &Controller,
         icon_type: &str,
         spaces: usize,
-        back_on_escape: bool,
+        interactive: bool,
     ) -> Result<Option<SettingsMenuOptions>> {
         let (discoverable_text, discoverable_icon) = if controller.is_discoverable {
             (
@@ -426,7 +426,7 @@ impl Menu {
             ("disable_adapter", disable_adapter_text.as_ref()),
         ];
 
-        if !back_on_escape {
+        if !interactive {
             options.push(("back", back_text.as_ref()));
         }
 
