@@ -111,6 +111,16 @@ Install from AUR with your favorite helper:
 paru -S bzmenu # or bzmenu-git
 ```
 
+### Gentoo Linux
+
+Install from GURU repository:
+
+```shell
+eselect repository enable guru
+emaint sync -r guru
+emerge --ask net-wireless/bzmenu
+```
+
 ## Usage
 
 ### Supported launchers
